@@ -1,5 +1,7 @@
 module SAC
 
-# package code goes here
+export groupby
+
+include("groupby.jl")
 
 end # module
