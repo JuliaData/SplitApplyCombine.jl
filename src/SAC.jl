@@ -1,7 +1,8 @@
 module SAC
 
-export groupby
+export group
 
-include("groupby.jl")
+include("group.jl")
+include("aggregate.jl")
 
 end # module

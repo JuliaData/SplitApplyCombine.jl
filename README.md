@@ -16,4 +16,4 @@ and also extend to tables or dataframes in a natural way.
 
 Currently implemented
 
- * `groupby`
+ * `group`
