@@ -1,8 +1,10 @@
 module SAC
 
-export group
+export group, groupreduce
 
 include("group.jl")
-include("aggregate.jl")
+include("groupreduce.jl")
+
+#include("aggregate.jl")
 
 end # module
