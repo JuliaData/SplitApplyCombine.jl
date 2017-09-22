@@ -1,17 +1,57 @@
 # TODO simplified signatures
 
-function join(left_key, right_key, out_f, comparison, left, right)
+join(left, right) = join(identity, identity, left, right)
+join(lkey, rkey, left, right) = join(lkey, rkey, tuple, left, right)
+join(lkey, rkey, f, left, right) = join(lkey, rkey, f, isequal, left, right)
+
+function join(lkey, rkey, f, comparison, left, right)
+    # The O(length(left)*length(right)) generic method when nothing about `comparison` is known
+
     # TODO Do this inference-free, like comprehensions...
-    T = Base.promote_op(out_f, eltype(left), eltype(right))
+    T = Base.promote_op(f, eltype(left), eltype(right))
     out = T[]
     for a ∈ left
         for b ∈ right
-            if comparison(left_key(a), right_key(b))
-                push!(out, out_f(a, b))
+            if comparison(lkey(a), rkey(b))
+                push!(out, f(a, b))
             end
         end
     end
     return out
 end
 
-# TODO specialized methods for comparisons: ==, isequal, <, isless, etc - via hashing and sorting strategies
+function join(lkey, rkey, f, ::typeof(isequal), left, right)
+    # isequal heralds a hash-based approach, roughly O(length(left) * log(length(right)))
+
+    # TODO Do this inference-free, like comprehensions...
+    T = Base.promote_op(f, eltype(left), eltype(right))
+    K = Base.promote_op(rkey, eltype(right))
+    V = eltype(right)
+    dict = Dict{K,Vector{V}}() # maybe a different stategy if right is unique
+    for b ∈ right
+        key = rkey(b)
+        if haskey(dict, key)
+            push!(dict[key], b)
+        else
+            dict[key] = V[b]
+        end
+    end
+
+    out = T[]
+    for a ∈ left
+        key = lkey(a)
+        if haskey(dict, key)
+            for b ∈ dict[key]
+                push!(out, f(a, b))
+            end
+        end
+    end
+    return out
+end
+
+# TODO more specialized methods for comparisons: ==, <, isless, etc - via sorting strategies
+
+# TODO perhaps a better version would be:
+# function join(left, right; lkey = identity, rkey = identity, f = tuple, comparison = isequal)
+#     ...
+# end

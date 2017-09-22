@@ -94,7 +94,7 @@ The package currently implements:
 
  * `group` (exported)
  * `groupreduce` (exported)
- * `join` (not exported due to clash with `Base`) (also is WIP) 
+ * `join` (not exported due to clash with `Base`)
  * perhaps `joinreduce` makes sense?
 
 ## Improving Julia syntax and APIs
@@ -136,12 +136,13 @@ end
 However, it would make sense to include the "final" function (dividing by the number of
 elements, in the above) in the `reduce` and `mapreduce` APIs with a default value of
 `identity`. However, at this stage it becomes unwieldly without using keyword arguments.
-Fortunately, can begin to use keyword arguments and might consider a "simpler" API:
+Fortunately, in v1.0 we can begin to use keyword arguments and might consider a "simpler"
+API:
 
  * `reduce(op, iter; v0 = Default(), final = identity)`
  * `mapreduce(f, op, iter; v0 = Default(), final = identity)`
 
-Here `Default()` would be some built-in to allow us to deal with reductions that start
+Here `Default()` would be some singleton to allow us to deal with reductions that start
 with or without a `v0`. Taking this to extremes, we may want to put all the functions in
 as keyword arguments (the default values are not thought out, rather chosen at random):
 
@@ -150,7 +151,7 @@ as keyword arguments (the default values are not thought out, rather chosen at r
  * `mapreduce(iters...; f = identity, op = tuple, v0 = Default(), final = identity)`
  * `group(iters...; by = identity, f = identity)`
  * `groupreduce(iters...; by = identity, f = identity, op = tuple, v0 = Default(), final = identity)`
- * `join` - TODO
+ * `join(left, right; lkey = identity, rkey = identity, f = tuple, comparison = isequal)`
  * `filter(iter; predicate = identity)`
 
 (probably the default value of `op` should throw an error upon call, reminding the user to

@@ -1,6 +1,6 @@
 module SAC
 
-export group, groupreduce, join
+export group, groupreduce
 
 include("group.jl")
 include("groupreduce.jl")
