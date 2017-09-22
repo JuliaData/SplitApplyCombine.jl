@@ -256,3 +256,29 @@ table1 |> join((r1,r2 -> (r1...,r2...), _, table2) |> group(r->r.col, _) |> leng
 
 Hopefully we can motivate all of the above by writing some interesting data manipulations
 in what is imagined to be included in an upgraded version of `Base`. (TODO).
+
+
+## Things I found in LINQ that aren't in Julia
+
+LINQ provides a set of methods for classes that fulfill the `IEnumerable` interface. Most of
+them are either much like Julia's `Base` functions (or those container here), or not really
+needed in Julia. However, there are a couple of useful things I noticed (note that these
+operations in LINQ are usually lazy, which may affect what is set of operations is
+desirable):
+
+ * Collections can nominate "default values" - I assume these are used for inference-style
+   purposes but I'm not sure.
+ * `GroupJoin` - perhaps an optimization of `join` followed by `group`.
+ * `SelectMany` - like `map` (what they call `Select`) except each mapping is one-to-many
+   elements.
+ * `SequenceEqual` - equality of elements (ignoring keys). This may be different to `==` in
+   Julia with new upcoming `Associative` interface. Could be `all(map(==, iter1, iter2))` or
+   `mapreduce(==, &, true, iter1, iter2)` in Julia currently (but maybe multi-iterator `all`
+   is better?).
+ * `Single` - returns the one and only element of an `IEnumerable`. Throws if there are e.g.
+   two elements. Perhaps could be `only(iter)` in Julia?
+ * `TakeWhile` - returns the head of a sequence until some element-predicate is `false`.
+ * `ThenBy` - enables lexicographical ordering.
+
+It's also an interesting question whether `map`, `filter`, and so-on should use 
+lazy/deferred evaluation in Julia...
