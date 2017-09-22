@@ -48,4 +48,4 @@ function group(by, f, iter)
     return out
 end
 
-group(by, f, iter1, iter2, iters...) = group(x -> by(x...), x -> f(x...), zip(iter1, iter2, iters...))
+group(by, f, iter1, iter2, iters...) = group((x -> by(x...)), (x -> f(x...)), zip(iter1, iter2, iters...))

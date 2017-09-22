@@ -88,9 +88,163 @@ implementations that focus on things such as out-of-core or distributed computin
 flexible acceleration indexing, etc. Here I'm only considering the basic, bare-bones API
 that may be extended and built upon by other packages.
 
-### API
+## API
 
-Currently implemented:
+The package currently implements:
 
- * `group`
- * `groupreduce`
+ * `group` (exported)
+ * `groupreduce` (exported)
+ * `join` (not exported due to clash with `Base`) (also is WIP) 
+ * perhaps `joinreduce` makes sense?
+
+## Improving Julia syntax and APIs
+
+Here is some discussion of possible ways to make the data APIs easier to interact with.
+
+### `join`
+
+The `Base.join` function is currently taken by string joins, and strings are iterable. This
+presents a rather unfortnate naming clash, since `join` or `Join` is common in a wide
+variety of languages to mean these two different operations (which isn't great for Julia's
+system of semantically distinct functions). I haven't found an alternative name for either
+operation... however I do note that the current `Base.join` on strings is a generalization
+of a concatenation operation with seperators added between, which might be a useful
+operation for generic iterables.
+
+### Reductions
+
+We currently have roughly the following methods
+
+ * `reduce(op, iter)`
+ * `reduce(op, v0, iter)`
+ * `mapreduce(f, op, iter)`
+ * `mapreduce(f, op, v0, iter)`
+ * `mapreduce(f, op, v0, iters...)`
+
+Unfortunately, these do not cover all common "reductions" and "agregations" since
+there is no function to apply at the end of the reduction (as included in LINQ, etc). Take
+for example `mean` which needs to divide the `sum` by the `length`, which could be written
+as:
+
+```julia
+function mean(iter)
+    (sum, n) = mapreduce(x -> (x, 1), (a,b) -> (a[1]+b[1], a[2]+b[2]), iter)
+    return sum / n
+end
+```
+
+However, it would make sense to include the "final" function (dividing by the number of
+elements, in the above) in the `reduce` and `mapreduce` APIs with a default value of
+`identity`. However, at this stage it becomes unwieldly without using keyword arguments.
+Fortunately, can begin to use keyword arguments and might consider a "simpler" API:
+
+ * `reduce(op, iter; v0 = Default(), final = identity)`
+ * `mapreduce(f, op, iter; v0 = Default(), final = identity)`
+
+Here `Default()` would be some built-in to allow us to deal with reductions that start
+with or without a `v0`. Taking this to extremes, we may want to put all the functions in
+as keyword arguments (the default values are not thought out, rather chosen at random):
+
+ * `map(iters...; f = identity)`
+ * `reduce(iter; op = tuple, v0 = Default(), final = identity)`
+ * `mapreduce(iters...; f = identity, op = tuple, v0 = Default(), final = identity)`
+ * `group(iters...; by = identity, f = identity)`
+ * `groupreduce(iters...; by = identity, f = identity, op = tuple, v0 = Default(), final = identity)`
+ * `join` - TODO
+
+(probably the default value of `op` should throw an error upon call, reminding the user to
+explicitly specify `op`). Note that the above standardize where the containers sit, as
+positional arguments, and share the same keyword names where they overlap. One could
+imagine removing `mapreduce` and instead putting an `f` keyword argument into `reduce` with
+default as `identity`.
+
+While v1.0 will solve the speed problems of using keyword arguments, there are still a few
+syntactic issues that make working with keyword arguments a bit more difficult than
+necessary. Particularly, I propose improvements to `do` syntax and to piping, below.
+
+### `do` syntax generalization
+
+The `do` syntax allows one to specify a closure such that it appears in code in the order
+that it is executed. However, it is (a) frequently confusing to newcomers and (b) is very
+picky about where the function is injected. For example, we can't specify `op` in
+`mapreduce` via the `do` syntax.
+
+I propose to use a `with` keyboard that enables more transparency, flexibility, and reads
+better as English. We begin with the current syntax:
+
+```julia
+map(iter) do x
+    x + 1
+end
+```
+
+I see the following as more natural, using `with` which is much like `let` but working in
+the opposite order:
+
+```julia
+map(f, iter) with f = function (x)
+   x + 1
+end
+```
+
+which lowers to
+```julia
+let f = function (x); x + 1; end;
+    map(f, iter)
+end
+```
+
+Now we can use `with` to inject `f` anywhere in the expression on the left, including in
+the place of keyword arguments or a positional argument other than the first. One could
+alternatively imagine a `with` that creates a block instead
+
+```julia
+mapreduce(f, op, iter) with
+    a = 2
+    f(x) = a*x
+    op(x,y) = (x+y)^a
+end
+```
+
+which lowers to
+
+```julia
+let a=2, f(x) = a*x, op(x,y) = (x+y)^a
+    mapreduce(f, op, iter)
+end
+```
+
+While investigating this, we also found that `let` doesn't support the standard long
+function form as assigment, as in we should allow `let function f(x); ...; end; ....; end`
+be an equivalent form for `let f = function (x); ...; end; ....; end`.
+
+### Piping
+
+Piping currently only works "natively" for single argument functions, but many data methods
+contain multiple slots for data and functions to appear. If a multi-function argument is
+required, the user is forced to write an extra anonymous using `->` a few characters after
+typing `|>`, which seems to me to be a jarring experience. I propose that `|>`
+automatically creataes a function of `_`, which is the output from the previous statement.
+Compare the following:
+
+```julia
+data |> x -> reduce(+, x) |> iseven
+data |> reduce(+, _) |> iseven(_)
+```
+I prefer the latter because (a) it's quicker to express the `reduce` operation, and (b) the
+more verbose `iseven` statement visually looks like a function call, distinct from the
+`data` on the left, and (c) the `|>` operators visually seperate better without `->`
+appearing in-between.
+
+Some functions may return multiple outputs. Consider using `eig` to get the determinant of
+a matrix:
+```julia
+matrix |> eig |> x -> prod(x[1])
+matrix |> eig(_) |> prod(_[1])
+```
+
+Data operations may be particularly complex and benifit from this syntax.
+```julia
+table1 |> x -> join((r1,r2 -> (r1...,r2...), x, table2) |> x -> group(r->r.col, x) |> length
+table1 |> join((r1,r2 -> (r1...,r2...), _, table2) |> group(r->r.col, _) |> length(_)
+```
