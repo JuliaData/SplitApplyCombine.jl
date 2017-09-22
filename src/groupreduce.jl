@@ -40,11 +40,12 @@ function groupreduce(by, f, op, iter)
 end
 
 """
-    groupreduce(by, f, op, v0, iter)
+    groupreduce(by, f, op, v0, iter...)
 
 Applies a `mapreduce`-like operation on the groupings labeled by passing the elements of
 `iter` through `by`. Mostly equivalent to `map(g -> reduce(op, v0, g), group(by, f, iter))`,
-but designed to be more efficient.
+but designed to be more efficient. If multiple collections (of the same length) are
+provided, the transformations `by` and `f` occur elementwise.
 """
 function groupreduce(by, f, op, v0, iter)
     # TODO Do this inference-free, like comprehensions...
@@ -64,3 +65,5 @@ function groupreduce(by, f, op, v0, iter)
     end
     return out
 end
+
+groupreduce(by, f, op, v0, iter1, iter2, iters...) = groupreduce((x -> by(x...)), (x -> f(x...)), op, v0, zip(iter1, iter2, iters...))

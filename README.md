@@ -151,12 +151,14 @@ as keyword arguments (the default values are not thought out, rather chosen at r
  * `group(iters...; by = identity, f = identity)`
  * `groupreduce(iters...; by = identity, f = identity, op = tuple, v0 = Default(), final = identity)`
  * `join` - TODO
+ * `filter(iter; predicate = identity)`
 
 (probably the default value of `op` should throw an error upon call, reminding the user to
 explicitly specify `op`). Note that the above standardize where the containers sit, as
 positional arguments, and share the same keyword names where they overlap. One could
 imagine removing `mapreduce` and instead putting an `f` keyword argument into `reduce` with
-default as `identity`.
+default as `identity`, as well as adding a filter to reductions, a mapping to `filter`,
+etc.
 
 While v1.0 will solve the speed problems of using keyword arguments, there are still a few
 syntactic issues that make working with keyword arguments a bit more difficult than
@@ -248,3 +250,8 @@ Data operations may be particularly complex and benifit from this syntax.
 table1 |> x -> join((r1,r2 -> (r1...,r2...), x, table2) |> x -> group(r->r.col, x) |> length
 table1 |> join((r1,r2 -> (r1...,r2...), _, table2) |> group(r->r.col, _) |> length(_)
 ```
+
+## Examples
+
+Hopefully we can motivate all of the above by writing some interesting data manipulations
+in what is imagined to be included in an upgraded version of `Base`. (TODO).
