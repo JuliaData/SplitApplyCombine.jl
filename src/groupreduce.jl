@@ -30,10 +30,11 @@ function groupreduce(by, f, op, iter)
     out = Dict{K, V}()
     for x ∈ iter
         key = by(x)
-        if haskey(out, key)
-            out[key] = op(out[key], f(x))
+        dict_index = Base.ht_keyindex2(out, key)
+        if dict_index > 0
+            @inbounds out.vals[dict_index] = op(out.vals[dict_index], f(x))
         else
-            out[key] = convert(V, f(x))
+            Base._setindex!(out, convert(V, f(x)), key, -dict_index)
         end
     end
     return out
@@ -57,10 +58,11 @@ function groupreduce(by, f, op, v0, iter)
     out = Dict{K, V}()
     for x ∈ iter
         key = by(x)
-        if haskey(out, key)
-            out[key] = op(out[key], f(x))
+        dict_index = Base.ht_keyindex2(out, key)
+        if dict_index > 0
+            @inbounds out.vals[dict_index] = op(out.vals[dict_index], f(x))
         else
-            out[key] = convert(V, op(v0, f(x)))
+            Base._setindex!(out, convert(V, op(v0, f(x))), key, -dict_index)
         end
     end
     return out

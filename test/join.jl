@@ -2,6 +2,7 @@
     l = 2:5
     r = 3:6
     @test SAC.join(l, r) == [(3,3), (4,4), (5,5)]
+    @test SAC.join(l, [3,3,3]) == [(3,3), (3,3), (3,3)]
     @test SAC.join(identity, identity, l, r) == [(3,3), (4,4), (5,5)]
     @test SAC.join(identity, identity, tuple, l, r) == [(3,3), (4,4), (5,5)]
     @test SAC.join(identity, identity, tuple, isequal, l, r) == [(3,3), (4,4), (5,5)]

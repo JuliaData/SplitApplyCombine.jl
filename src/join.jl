@@ -30,18 +30,15 @@ function join(lkey, rkey, f, ::typeof(isequal), left, right)
     dict = Dict{K,Vector{V}}() # maybe a different stategy if right is unique
     for b ∈ right
         key = rkey(b)
-        if haskey(dict, key)
-            push!(dict[key], b)
-        else
-            dict[key] = V[b]
-        end
+        push!(get!(()->Vector{V}(), dict, key), b)
     end
 
     out = T[]
     for a ∈ left
         key = lkey(a)
-        if haskey(dict, key)
-            for b ∈ dict[key]
+        dict_index = Base.ht_keyindex(dict, key)
+        if dict_index > 0 # -1 if key not found
+            for b ∈ dict.vals[dict_index]
                 push!(out, f(a, b))
             end
         end

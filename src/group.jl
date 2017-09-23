@@ -39,11 +39,7 @@ function group(by, f, iter)
     out = Dict{K, Vector{V}}()
     for x ∈ iter
         key = by(x)
-        if haskey(out, key)
-            push!(out[key], f(x))
-        else
-            out[key] = V[f(x)]
-        end
+        push!(get!(()->Vector{V}(), out, key), f(x))
     end
     return out
 end
