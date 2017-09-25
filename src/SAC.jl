@@ -1,9 +1,9 @@
 module SAC
 
-export group, groupreduce
+export group, groupreduce, innerjoin
 
 include("group.jl")
 include("groupreduce.jl")
-include("join.jl")
+include("innerjoin.jl")
 
 end # module

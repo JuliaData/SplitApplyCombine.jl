@@ -90,12 +90,19 @@ that may be extended and built upon by other packages.
 
 ## API
 
-The package currently implements:
+The package currently implements and exports:
 
- * `group` (exported)
- * `groupreduce` (exported)
- * `join` (not exported due to clash with `Base`)
- * perhaps `joinreduce` makes sense?
+ * `group`
+ * `groupreduce`
+ * `innerjoin` (chosen not clash with the existing `Base.join` for strings)
+
+Things intended to be implemented.
+
+ * `leftgroupjoin` - somewhat like a SQL left outer join - creates keys existing in the
+   first dataset and groups matching elements in the second dataset. If there is no match,
+   the group will exist but be empty. Similar to LINQ's `GroupJoin`.
+ * perhaps `innerjoinreduce` and `leftgroupjoinreduce` make sense for the same reasons as
+   `mapreduce` and `groupreduce`.
 
 ## Improving Julia syntax and APIs
 
@@ -103,13 +110,18 @@ Here is some discussion of possible ways to make the data APIs easier to interac
 
 ### `join`
 
-The `Base.join` function is currently taken by string joins, and strings are iterable. This
+The `Base.join` function is currently taken by string joins, and strings are iterable and so
+should participate in the "data" join as a colleciton of characters. This
 presents a rather unfortnate naming clash, since `join` or `Join` is common in a wide
 variety of languages to mean these two different operations (which isn't great for Julia's
-system of semantically distinct functions). I haven't found an alternative name for either
-operation... however I do note that the current `Base.join` on strings is a generalization
-of a concatenation operation with seperators added between, which might be a useful
-operation for generic iterables.
+system of semantically distinct functions). I haven't found an alternative name for the 
+string operation... however I do note that the current `Base.join` on strings is a
+generalization of a concatenation operation with seperators added between, which might be a
+useful operation for generic iterables, and might take a name related to concatenation
+instead.
+
+Here I've exported `innerjoin` to avoid clashing, which is a reasonably common (but longer)
+name for this operation.
 
 ### Reductions
 
@@ -268,7 +280,7 @@ desirable):
 
  * Collections can nominate "default values" - I assume these are used for inference-style
    purposes but I'm not sure.
- * `GroupJoin` - perhaps an optimization of `join` followed by `group`.
+ * `GroupJoin` - a more sensible version of SQL left outer joins.
  * `SelectMany` - like `map` (what they call `Select`) except each mapping is one-to-many
    elements.
  * `SequenceEqual` - equality of elements (ignoring keys). This may be different to `==` in

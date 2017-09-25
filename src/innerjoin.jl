@@ -1,10 +1,10 @@
 # TODO simplified signatures
 
-join(left, right) = join(identity, identity, left, right)
-join(lkey, rkey, left, right) = join(lkey, rkey, tuple, left, right)
-join(lkey, rkey, f, left, right) = join(lkey, rkey, f, isequal, left, right)
+innerjoin(left, right) = innerjoin(identity, identity, left, right)
+innerjoin(lkey, rkey, left, right) = innerjoin(lkey, rkey, tuple, left, right)
+innerjoin(lkey, rkey, f, left, right) = innerjoin(lkey, rkey, f, isequal, left, right)
 
-function join(lkey, rkey, f, comparison, left, right)
+function innerjoin(lkey, rkey, f, comparison, left, right)
     # The O(length(left)*length(right)) generic method when nothing about `comparison` is known
 
     # TODO Do this inference-free, like comprehensions...
@@ -20,7 +20,7 @@ function join(lkey, rkey, f, comparison, left, right)
     return out
 end
 
-function join(lkey, rkey, f, ::typeof(isequal), left, right)
+function innerjoin(lkey, rkey, f, ::typeof(isequal), left, right)
     # isequal heralds a hash-based approach, roughly O(length(left) * log(length(right)))
 
     # TODO Do this inference-free, like comprehensions...
@@ -49,6 +49,6 @@ end
 # TODO more specialized methods for comparisons: ==, <, isless, etc - via sorting strategies
 
 # TODO perhaps a better version would be:
-# function join(left, right; lkey = identity, rkey = identity, f = tuple, comparison = isequal)
+# function innerjoin(left, right; lkey = identity, rkey = identity, f = tuple, comparison = isequal)
 #     ...
 # end
