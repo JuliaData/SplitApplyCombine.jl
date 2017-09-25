@@ -90,23 +90,100 @@ that may be extended and built upon by other packages.
 
 ## API
 
-The package currently implements and exports:
+The package currently implements and exports `group`, `groupreduce`, `innerjoin` and
+`leftgroupjoin`. (Consideration may also be given to `innerjoinreduce` and 
+`leftgroupjoinreduce` for the same reasons as `mapreduce` and `groupreduce`).
 
- * `group`
- * `groupreduce`
- * `innerjoin` (chosen not clash with the existing `Base.join` for strings)
+### `group(by, [f = identity], iter)`
 
-Things intended to be implemented:
+Group the elements `x` of the iterable `iter` into groups labeled by `by(x)`, transforming
+each element . The default implementation creates a `Dict` of `Vector`s, but of course a
+table/dataframe package might extend this to return a suitable (nested) structure of
+tables/dataframes.
 
- * `leftgroupjoin` - somewhat like a SQL left outer join - creates keys existing in the
-   first dataset and groups matching elements in the second dataset. If there is no match,
-   the group will exist but be empty. Similar to LINQ's `GroupJoin`.
- * perhaps `innerjoinreduce` and `leftgroupjoinreduce` make sense for the same reasons as
-   `mapreduce` and `groupreduce`.
+Also a `group(by, f, iters...)` method exists for the case where multiple iterables of the
+same length are provided.
+
+#### Examples:
+```julia
+julia> group(iseven, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+Dict{Bool,Array{Int64,1}} with 2 entries:
+  false => [1, 3, 5, 7, 9]
+  true  => [2, 4, 6, 8, 10]
+
+julia> group(iseven, x -> x ÷ 2, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+Dict{Bool,Array{Int64,1}} with 2 entries:
+  false => [0, 1, 2, 3, 4]
+  true  => [1, 2, 3, 4, 5]
+```
+
+### groupreduce(by, [f = identity], op, [v0], iter...)
+
+Applies a `mapreduce`-like operation on the groupings labeled by passing the elements of
+`iter` through `by`. Mostly equivalent to `map(g -> reduce(op, v0, g), group(by, f, iter))`,
+but designed to be more efficient. If multiple collections (of the same length) are
+provided, the transformations `by` and `f` occur elementwise.
+
+#### Example:
+```julia
+julia> groupreduce(iseven, +, 1:10)
+Dict{Bool,Int64} with 2 entries:
+  false => 25
+  true  => 30
+```
+
+### `innerjoin([lkey = identity], [rkey = idenity], [f = tuple], [comparison = isequal], left, right)`
+
+*Note*: it might be more natural to call this function `join`, except it clashes with the
+existing `Base.join` string operation.
+
+Performs a relational-style join operation between iterables `left` and `right`, returning
+a collection of elements `f(l, r)` for which `comparison(lkey(l), rkey(r))` is `true` where
+`l ∈ left`, `r ∈ right.`
+
+#### Example"
+
+```julia
+julia> innerjoin(iseven, iseven, tuple, ==, [1,2,3,4], [0,1,2])
+6-element Array{Tuple{Int64,Int64},1}:
+ (1, 1)
+ (2, 0)
+ (2, 2)
+ (3, 1)
+ (4, 0)
+ (4, 2)
+```
+
+### `leftgroupjoin([lkey = identity], [rkey = identity], [f = tuple], [comparison = isequal], left, right)`
+
+Creates a collection if groups labelled by `lkey(l)` where each group contains elements
+`f(l, r)` which satisfy `comparison(lkey(l), rkey(r))`. If there rae no matches, the group
+is still created (with an empty collection).
+
+This operation shares similarities with an SQL left outer join, but is more similar to
+LINQ's `GroupJoin`.
+
+#### Example:
+
+```julia
+julia> leftgroupjoin(iseven, iseven, tuple, ==, [1,2,3,4], [0,1,2])
+Dict{Bool,Array{Tuple{Int64,Int64},1}} with 2 entries:
+  false => Tuple{Int64,Int64}[(1, 1), (3, 1)]
+  true  => Tuple{Int64,Int64}[(2, 0), (2, 2), (4, 0), (4, 2)]
+```
+
+### TODO
+
+The API could be improved by providing default join comparison and mapping operations which
+can be extended by table/dataframe packages (also, `NamedTuple`s) to perform a natural join
+by automatically linking fields with matching names. In this case, it would be perfectly
+reasonable to use the `⨝` operator for `a ⨝ b` being `innerjoin(a, b)` for tables `a` and 
+`b` with appropriately named columns.
 
 ## Improving Julia syntax and APIs
 
-Here is some discussion of possible ways to make the data APIs easier to interact with.
+Here is some discussion of possible ways to make the data APIs in `Base` easier to interact
+with.
 
 ### `join`
 
@@ -292,7 +369,15 @@ julia> innerjoin(id_name -> id_name[1], id_job -> id_job[1], (id_name, id_job) -
  ("Jane Doe", "Doctor")
 ```
 
-Here's a `group` example, adapted from MSDN LINQ C# documentation:
+In the future, it would be much more readable to use `NamedTuple`. Here is an
+example of possible v1.0 syntax:
+```julia
+employees = [(id = 20, name = "John Doe"), (id = 40, "Jane Doe")]
+jobs = [(id = 20, job = "Lawyer"), (id = 40, job = "Doctor")]
+innerjoin(l -> l.id, r = r.id, (l,r) -> (name = l.name, job = r.job), employees, jobs)
+```
+
+Moving on, this is a `group` example with `Tuple`s, adapted from MSDN LINQ C# documentation:
 
 ```julia
 julia> pet_name_age = [("Barley", 8), ("Boots", 4), ("Whiskers", 1), ("Daisy", 4)]
@@ -309,7 +394,30 @@ Dict{Int64,Array{String,1}} with 3 entries:
   1 => ["Whiskers"]
 ```
 
-In both cases, it would be much more readable to use `NamedTuple`, and packages like
+And finally, here is an example using the `leftgroupjoin` function (perhaps a group key
+distinct from join key would be benificial?).
+
+```julia
+julia> custid_name = [(1, "Bob"), (2, "Jane"), (3, "David")]
+3-element Array{Tuple{Int64,String},1}:
+ (1, "Bob")  
+ (2, "Jane") 
+ (3, "David")
+
+julia> orderid_custid_product_price = [(1, 2, "Shoes", 99.99), (2, 1, "Shirt", 50.0), (3, 2, "Dress", 60.0)]
+3-element Array{Tuple{Int64,Int64,String,Float64},1}:
+ (1, 2, "Shoes", 99.99)
+ (2, 1, "Shirt", 50.0) 
+ (3, 2, "Dress", 60.0) 
+
+julia> leftgroupjoin(x->x[1], x->x[2], (x,y)->(y[3], y[4]), custid_name, orderid_custid_product_price)
+Dict{Int64,Array{Tuple{String,Float64},1}} with 3 entries:
+  2 => Tuple{String,Float64}[("Shoes", 99.99), ("Dress", 60.0)]
+  3 => Tuple{String,Float64}[]
+  1 => Tuple{String,Float64}[("Shirt", 50.0)]
+```
+
+In all cases, it would be much more readable to use `NamedTuple`, and packages like
 *DataFrames* would let you select columns and so-on with greater ease rather than creating
 anonymous functions.
 
