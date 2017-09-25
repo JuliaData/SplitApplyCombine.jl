@@ -96,7 +96,7 @@ The package currently implements and exports:
  * `groupreduce`
  * `innerjoin` (chosen not clash with the existing `Base.join` for strings)
 
-Things intended to be implemented.
+Things intended to be implemented:
 
  * `leftgroupjoin` - somewhat like a SQL left outer join - creates keys existing in the
    first dataset and groups matching elements in the second dataset. If there is no match,
@@ -267,7 +267,51 @@ table1 |> join((r1,r2 -> (r1...,r2...), _, table2) |> group(r->r.col, _) |> leng
 ## Examples
 
 Hopefully we can motivate all of the above by writing some interesting data manipulations
-in what is imagined to be included in an upgraded version of `Base`. (TODO).
+in what is imagined to be included in an upgraded version of `Base`. These examples use
+tuple rows with overly expressive variable names - it would be better to use named tuples
+and simpler table names.
+
+Here's a `innerjoin` example, adapted from the *DataFrames.jl* docs:
+
+```julia
+julia> using SAC
+
+julia> employee_id_name = [(20, "John Doe"), (40, "Jane Doe")]
+2-element Array{Tuple{Int64,String},1}:
+ (20, "John Doe")
+ (40, "Jane Doe")
+
+julia> employee_id_job = [(20, "Lawyer"), (40, "Doctor")]
+2-element Array{Tuple{Int64,String},1}:
+ (20, "Lawyer")
+ (40, "Doctor")
+
+julia> innerjoin(id_name -> id_name[1], id_job -> id_job[1], (id_name, id_job) -> (id_name[2], id_job[2]), employee_id_name, employee_id_job) 
+2-element Array{Tuple{String,String},1}:
+ ("John Doe", "Lawyer")
+ ("Jane Doe", "Doctor")
+```
+
+Here's a `group` example, adapted from MSDN LINQ C# documentation:
+
+```julia
+julia> pet_name_age = [("Barley", 8), ("Boots", 4), ("Whiskers", 1), ("Daisy", 4)]
+4-element Array{Tuple{String,Int64},1}:
+ ("Barley", 8)  
+ ("Boots", 4)   
+ ("Whiskers", 1)
+ ("Daisy", 4)   
+
+julia> group(name_age -> name_age[2], name_age -> name_age[1], pet_name_age)
+Dict{Int64,Array{String,1}} with 3 entries:
+  4 => ["Boots", "Daisy"]
+  8 => ["Barley"]
+  1 => ["Whiskers"]
+```
+
+In both cases, it would be much more readable to use `NamedTuple`, and packages like
+*DataFrames* would let you select columns and so-on with greater ease rather than creating
+anonymous functions.
 
 
 ## Things I found in LINQ that aren't in Julia
@@ -294,3 +338,11 @@ desirable):
 
 It's also an interesting question whether `map`, `filter`, and so-on should use 
 lazy/deferred evaluation in Julia...
+
+## Some things I've read (obviously a subset)
+
+ * http://www.andl.org/the-third-manifesto-paraphrase-1/
+ * https://github.com/ggaughan/dee (http://www.quicksort.co.uk/DeeDoc.html)
+ * https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/linq/getting-started-with-linq
+ * http://pandas.pydata.org/pandas-docs/stable/
+ * https://www.rdocumentation.org/packages/dplyr/versions/0.5.0
