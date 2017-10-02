@@ -172,6 +172,28 @@ Dict{Bool,Array{Tuple{Int64,Int64},1}} with 2 entries:
   true  => Tuple{Int64,Int64}[(2, 0), (2, 2), (4, 0), (4, 2)]
 ```
 
+### `only(iter)`
+
+Returns the only element of the collection `iter`. If it contains zero elements or more than
+one element, an error is thrown.
+
+#### Example:
+
+```julia
+julia> only([3])
+3
+
+julia> only([])
+ERROR: ArgumentError: Collection must have exactly one element (input was empty)
+Stacktrace:
+ [1] only(::Array{Any,1}) at /home/ferris/.julia/v0.7/SAC/src/only.jl:4
+
+julia> only([3, 10])
+ERROR: ArgumentError: Collection must have exactly one element (input contained more than one element)
+Stacktrace:
+ [1] only(::Array{Int64,1}) at /home/ferris/.julia/v0.7/SAC/src/only.jl:10
+```
+
 ### TODO
 
 The API could be improved by providing default join comparison and mapping operations which
