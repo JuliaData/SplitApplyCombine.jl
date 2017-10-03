@@ -88,11 +88,17 @@ implementations that focus on things such as out-of-core or distributed computin
 flexible acceleration indexing, etc. Here I'm only considering the basic, bare-bones API
 that may be extended and built upon by other packages.
 
-## API
+# API
 
-The package currently implements and exports `group`, `groupreduce`, `innerjoin` and
-`leftgroupjoin`. (Consideration may also be given to `innerjoinreduce` and 
-`leftgroupjoinreduce` for the same reasons as `mapreduce` and `groupreduce`).
+The package currently implements and exports `group`, `groupinds`, `groupview`,
+`groupreduce`, `innerjoin` and `leftgroupjoin`. (Consideration may also be given to
+`innerjoinreduce` and `leftgroupjoinreduce` for the same reasons as `mapreduce` and
+`groupreduce`).
+
+## Grouping
+
+These operations help you split the elements of a collection according to an arbitrary
+function which maps each element to a group key.
 
 ### `group(by, [f = identity], iter)`
 
@@ -117,7 +123,57 @@ Dict{Bool,Array{Int64,1}} with 2 entries:
   true  => [1, 2, 3, 4, 5]
 ```
 
-### groupreduce(by, [f = identity], op, [v0], iter...)
+### `groupinds(by, iter)`
+
+For *indexable* collections `iter`, returns the indices/keys associated with each group.
+Similar to `group`, it supports multiple collections (with identical indices/keys) via the
+method `groupinds(by, iters...)`.
+
+#### Example
+
+```julia
+julia> groupinds(iseven, [3,4,2,6,5,8])
+Dict{Bool,Array{Int64,1}} with 2 entries:
+  false => [1, 5]
+  true  => [2, 3, 4, 6]
+```
+
+### `groupview(by, iter)`
+
+Similar to `group(by, iter)` but the grouped elements are a view of the original collection.
+Uses `groupinds` to construct the appropriate container.
+
+#### Example
+
+```julia
+julia> v = [3,4,2,6,5,8]
+6-element Array{Int64,1}:
+ 3
+ 4
+ 2
+ 6
+ 5
+ 8
+
+julia> groups = groupview(iseven, v)
+SAC.Groups{Bool,Any,Array{Int64,1},Dict{Bool,Array{Int64,1}}} with 2 entries:
+  false => [3, 5]
+  true  => [4, 2, 6, 8]
+
+julia> groups[false][:] = 99
+99
+
+julia> v
+6-element Array{Int64,1}:
+ 99
+  4
+  2
+  6
+ 99
+  8
+```
+
+### `groupreduce(by, [f = identity], op, [v0], iter...)`
 
 Applies a `mapreduce`-like operation on the groupings labeled by passing the elements of
 `iter` through `by`. Mostly equivalent to `map(g -> reduce(op, v0, g), group(by, f, iter))`,
@@ -194,7 +250,7 @@ Stacktrace:
  [1] only(::Array{Int64,1}) at /home/ferris/.julia/v0.7/SAC/src/only.jl:10
 ```
 
-### TODO
+## TODO
 
 The API could be improved by providing default join comparison and mapping operations which
 can be extended by table/dataframe packages (also, `NamedTuple`s) to perform a natural join
@@ -202,7 +258,14 @@ by automatically linking fields with matching names. In this case, it would be p
 reasonable to use the `⨝` operator for `a ⨝ b` being `innerjoin(a, b)` for tables `a` and 
 `b` with appropriately named columns.
 
-## Improving Julia syntax and APIs
+Using keyword arguments, it would be be nice to be able to filter out entire groups or
+elements of groups in `group`, `groupinds`, `groupview` and `groupreduce`. This would be
+more efficient than collecting all the groups and filtering afterwards.
+
+Perhaps we want to either add the ability for `groupview` to have a mapping function `f`, or
+else remove this from `group`, since this seems somewhat inconsistent.
+
+# Improving Julia syntax and APIs
 
 Here is some discussion of possible ways to make the data APIs in `Base` easier to interact
 with.

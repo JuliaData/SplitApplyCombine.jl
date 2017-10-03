@@ -1,9 +1,10 @@
 module SAC
 
-export group, groupreduce, innerjoin, leftgroupjoin, only
+export group, groupinds, Groups, groupview, groupreduce
+export innerjoin, leftgroupjoin
+export only
 
 include("group.jl")
-include("groupreduce.jl")
 include("innerjoin.jl")
 include("leftgroupjoin.jl")
 include("only.jl")
