@@ -20,3 +20,5 @@ end
 function only(::NTuple{N,Any}) where N
     throw(ArgumentError("Collection must have exactly one element (input has $N elements)"))
 end
+
+only(x::Nullable) = get(x)

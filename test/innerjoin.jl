@@ -1,9 +1,9 @@
 @testset "innerjoin" begin
     l = 2:5
     r = 3:6
-    @test innerjoin(l, r) == [(3,3), (4,4), (5,5)]
-    @test innerjoin(l, [3,3,3]) == [(3,3), (3,3), (3,3)]
-    @test innerjoin(identity, identity, l, r) == [(3,3), (4,4), (5,5)]
+    @test innerjoin(l, r) == [3, 4, 5]
+    @test innerjoin(l, [3,3,3]) == [3, 3, 3]
+    @test innerjoin(identity, identity, l, r) == [3, 4, 5]
     @test innerjoin(identity, identity, tuple, l, r) == [(3,3), (4,4), (5,5)]
     @test innerjoin(identity, identity, tuple, isequal, l, r) == [(3,3), (4,4), (5,5)]
     @test innerjoin(identity, identity, tuple, ==, l, r) == [(3,3), (4,4), (5,5)]

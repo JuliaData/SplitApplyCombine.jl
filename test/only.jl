@@ -10,4 +10,7 @@
     @test only(Dict(1=>3)) === (1=>3)
     @test_throws Exception only(Dict{Int,Int}())
     @test_throws Exception only(Dict(1=>3, 2=>2))
+
+    @test only(Nullable(1)) === 1
+    @test_throws Exception Only(Nullable{Int}())
 end

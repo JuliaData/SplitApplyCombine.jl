@@ -33,8 +33,8 @@ Dict{Bool,Array{Int64,1}} with 2 entries:
 function group(by, f, iter)
     # TODO Do this inference-free, like comprehensions...
     T = eltype(iter)
-    K = Base.promote_op(by, T)
-    V = Base.promote_op(f, T)
+    K = promote_op(by, T)
+    V = promote_op(f, T)
     
     out = Dict{K, Vector{V}}()
     for x ∈ iter
@@ -64,7 +64,7 @@ Dict{Bool,Array{Int64,1}} with 2 entries:
 """
 function groupinds(by, iter)
     T = eltype(iter)
-    K = Base.promote_op(by, T)
+    K = promote_op(by, T)
     inds = keys(iter)
     V = eltype(inds)
 
@@ -135,7 +135,7 @@ julia> v
 """
 function groupview(by, iter)
     inds = groupinds(by, iter)
-    V = Base.promote_op(view, iter, eltype(inds))
+    V = promote_op(view, iter, eltype(inds))
     return Groups{keytype(inds), V, typeof(iter), typeof(inds)}(iter, inds)
 end
 
@@ -167,9 +167,9 @@ element in the group rather than `v0`.
 function groupreduce(by, f, op, iter)
     # TODO Do this inference-free, like comprehensions...
     T = eltype(iter)
-    K = Base.promote_op(by, T)
-    T2 = Base.promote_op(f, T)
-    V = Base.promote_op(op, T2, T2)
+    K = promote_op(by, T)
+    T2 = promote_op(f, T)
+    V = promote_op(op, T2, T2)
 
     out = Dict{K, V}()
     for x ∈ iter
@@ -196,9 +196,9 @@ provided, the transformations `by` and `f` occur elementwise.
 function groupreduce(by, f, op, v0, iter)
     # TODO Do this inference-free, like comprehensions...
     T = eltype(iter)
-    K = Base.promote_op(by, T)
-    T2 = Base.promote_op(f, T)
-    V = Base.promote_op(op, T2, T2)
+    K = promote_op(by, T)
+    T2 = promote_op(f, T)
+    V = promote_op(op, T2, T2)
 
     out = Dict{K, V}()
     for x ∈ iter

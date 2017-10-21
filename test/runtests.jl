@@ -5,5 +5,6 @@ include("group.jl")
 include("innerjoin.jl")
 include("leftgroupjoin.jl")
 include("only.jl")
-include("underscore.jl")
+include("map.jl")
 
+include("underscore.jl")

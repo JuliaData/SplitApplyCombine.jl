@@ -24,8 +24,8 @@ function leftgroupjoin(lkey, rkey, f, comparison, left, right)
     # The O(length(left)*length(right)) generic method when nothing about `comparison` is known
 
     # TODO Do this inference-free, like comprehensions...
-    T = Base.promote_op(f, eltype(left), eltype(right))
-    K = Base.promote_op(lkey, eltype(left))
+    T = promote_op(f, eltype(left), eltype(right))
+    K = promote_op(lkey, eltype(left))
     V = Vector{T}
     out = Dict{K, V}()
     for a ∈ left
@@ -44,8 +44,8 @@ function leftgroupjoin(lkey, rkey, f, ::typeof(isequal), left, right)
     # isequal heralds a hash-based approach, roughly O(length(left) * log(length(right)))
 
     # TODO Do this inference-free, like comprehensions...
-    T = Base.promote_op(f, eltype(left), eltype(right))
-    K = Base.promote_op(rkey, eltype(right))
+    T = promote_op(f, eltype(left), eltype(right))
+    K = promote_op(rkey, eltype(right))
     V = eltype(right)
     dict = Dict{K,Vector{V}}() # maybe a different stategy if right is unique
     for b ∈ right
@@ -53,7 +53,7 @@ function leftgroupjoin(lkey, rkey, f, ::typeof(isequal), left, right)
         push!(get!(()->Vector{V}(), dict, key), b)
     end
 
-    K2 = Base.promote_op(lkey, eltype(left))
+    K2 = promote_op(lkey, eltype(left))
     out = Dict{K2, Vector{T}}()
     for a ∈ left
         key = lkey(a)

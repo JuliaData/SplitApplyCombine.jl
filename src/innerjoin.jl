@@ -1,8 +1,26 @@
+# Join works on collections of collections (e.g. a table is a collection of
+# rows).
+
+# This seems to be a generically useful primitive on indexable collections,
+# and is a useful definition for "natural" joins
+function overlaps(a, b)
+    for i in keys(a)
+        if haskey(b, i)
+            if a[i] != b[i]
+                return false
+            end
+        end
+    end
+    return true
+end
+
 # TODO simplified signatures
 
 innerjoin(left, right) = innerjoin(identity, identity, left, right)
-innerjoin(lkey, rkey, left, right) = innerjoin(lkey, rkey, tuple, left, right)
-innerjoin(lkey, rkey, f, left, right) = innerjoin(lkey, rkey, f, isequal, left, right)
+innerjoin(lkey, rkey, left, right) = innerjoin(lkey, rkey, merge, left, right)
+innerjoin(lkey, rkey, f, left, right) = innerjoin(lkey, rkey, f, overlaps, left, right)
+
+const ⨝ = innerjoin
 
 """
     innerjoin(lkey, rkey, f, comparison, left, right)
@@ -28,7 +46,7 @@ function innerjoin(lkey, rkey, f, comparison, left, right)
     # The O(length(left)*length(right)) generic method when nothing about `comparison` is known
 
     # TODO Do this inference-free, like comprehensions...
-    T = Base.promote_op(f, eltype(left), eltype(right))
+    T = promote_op(f, eltype(left), eltype(right))
     out = T[]
     for a ∈ left
         for b ∈ right
@@ -44,8 +62,8 @@ function innerjoin(lkey, rkey, f, ::typeof(isequal), left, right)
     # isequal heralds a hash-based approach, roughly O(length(left) * log(length(right)))
 
     # TODO Do this inference-free, like comprehensions...
-    T = Base.promote_op(f, eltype(left), eltype(right))
-    K = Base.promote_op(rkey, eltype(right))
+    T = promote_op(f, eltype(left), eltype(right))
+    K = promote_op(rkey, eltype(right))
     V = eltype(right)
     dict = Dict{K,Vector{V}}() # maybe a different stategy if right is unique
     for b ∈ right
