@@ -95,6 +95,66 @@ The package currently implements and exports `only`, `mapmany`, `flatten`, `grou
 `@_` macro. Expect this list
 to grow.
 
+## Generic operations on collections
+
+### `only(iter)`
+
+Returns the only element of the collection `iter`. If it contains zero elements or more than
+one element, an error is thrown.
+
+#### Example:
+
+```julia
+julia> only([3])
+3
+
+julia> only([])
+ERROR: ArgumentError: Collection must have exactly one element (input was empty)
+Stacktrace:
+ [1] only(::Array{Any,1}) at /home/ferris/.julia/v0.7/SAC/src/only.jl:4
+
+julia> only([3, 10])
+ERROR: ArgumentError: Collection must have exactly one element (input contained more than one element)
+Stacktrace:
+ [1] only(::Array{Int64,1}) at /home/ferris/.julia/v0.7/SAC/src/only.jl:10
+```
+
+### `mapmany(f, iters...)`
+
+Like `map`, but `f(x...)` for each `x ∈ zip(iters...)` may return an arbitrary number of 
+values to insert into the output.
+
+#### Example:
+
+```julia
+julia> mapmany(x -> 1:x, [1,2,3])
+6-element Array{Int64,1}:
+ 1
+ 1
+ 2
+ 1
+ 2
+ 3
+```
+
+### `flatten(a)`
+
+Takes a collection of collections `a` and returns a collection containing all the elements
+of the subcollecitons of `a`. Equivalent to `mapmany(idenity, a)`.
+
+#### Example:
+
+```julia
+julia> flatten([1:1, 1:2, 1:3])
+6-element Array{Int64,1}:
+ 1
+ 1
+ 2
+ 1
+ 2
+ 3
+```
+
 ## Grouping
 
 These operations help you split the elements of a collection according to an arbitrary
@@ -188,6 +248,8 @@ Dict{Bool,Int64} with 2 entries:
   true  => 30
 ```
 
+## Joining
+
 ### `innerjoin([lkey = identity], [rkey = idenity], [f = tuple], [comparison = isequal], left, right)`
 
 *Note*: it might be more natural to call this function `join`, except it clashes with the
@@ -228,27 +290,7 @@ Dict{Bool,Array{Tuple{Int64,Int64},1}} with 2 entries:
   true  => Tuple{Int64,Int64}[(2, 0), (2, 2), (4, 0), (4, 2)]
 ```
 
-### `only(iter)`
-
-Returns the only element of the collection `iter`. If it contains zero elements or more than
-one element, an error is thrown.
-
-#### Example:
-
-```julia
-julia> only([3])
-3
-
-julia> only([])
-ERROR: ArgumentError: Collection must have exactly one element (input was empty)
-Stacktrace:
- [1] only(::Array{Any,1}) at /home/ferris/.julia/v0.7/SAC/src/only.jl:4
-
-julia> only([3, 10])
-ERROR: ArgumentError: Collection must have exactly one element (input contained more than one element)
-Stacktrace:
- [1] only(::Array{Int64,1}) at /home/ferris/.julia/v0.7/SAC/src/only.jl:10
-```
+## Syntax and macros
 
 ### `@_` macro
 

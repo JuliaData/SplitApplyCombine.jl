@@ -1,7 +1,8 @@
 """
     mapmany(f, a...)
 
-Like `map`, but `f(x)` for each `x ∈ a` will return an arbitrary number of values.
+Like `map`, but `f(x)` for each `x ∈ a` may return an arbitrary number of values to insert
+into the output.
 
 # Example
 
@@ -35,6 +36,7 @@ of the subcollecitons of `a`. Equivalent to `mapmany(idenity, a)`.
 
 # Example
 
+```jldoctest
 julia> flatten([1:1, 1:2, 1:3])
 6-element Array{Int64,1}:
  1
@@ -43,6 +45,7 @@ julia> flatten([1:1, 1:2, 1:3])
  1
  2
  3
+```
 """
 flatten(x) = mapmany(identity, x) 
 
