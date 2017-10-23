@@ -1,7 +1,7 @@
 # Split, apply, combine
 
 [![Build Status](https://travis-ci.org/JuliaData/SplitApplyCombine.jl.svg?branch=master)](https://travis-ci.org/JuliaData/SplitApplyCombine.jl)
-[![Coverage Status](https://coveralls.io/repos/JuliaData/SplitApplyCombine.jl/badge.svg?branch=master&service=github)](https://coveralls.io/github/JuliaData/SplitApplyCombine.jl?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/JuliaData/SplitApplyCombine.jl/badge.svg?branch=master)](https://coveralls.io/github/JuliaData/SplitApplyCombine.jl?branch=master)
 [![codecov.io](http://codecov.io/github/JuliaData/SplitApplyCombine.jl/coverage.svg?branch=master)](http://codecov.io/github/JuliaData/SplitApplyCombine.jl?branch=master)
 
 This is a playground for exploring data manipulation functions in Julia - their
