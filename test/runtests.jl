@@ -1,5 +1,9 @@
-using SAC
-using Test
+using SplitApplyCombine
+if VERSION < v"0.7-"
+    using Base.Test
+else
+    using Test
+end
 
 include("group.jl")
 include("innerjoin.jl")

@@ -1,8 +1,8 @@
 # Split, apply, combine
 
-[![Build Status](https://travis-ci.org/andyferris/SAC.jl.svg?branch=master)](https://travis-ci.org/andyferris/SAC.jl)
-[![Coverage Status](https://coveralls.io/repos/andyferris/SAC.jl/badge.svg?branch=master&service=github)](https://coveralls.io/github/andyferris/SAC.jl?branch=master)
-[![codecov.io](http://codecov.io/github/andyferris/SAC.jl/coverage.svg?branch=master)](http://codecov.io/github/andyferris/SAC.jl?branch=master)
+[![Build Status](https://travis-ci.org/JuliaData/SplitApplyCombine.jl.svg?branch=master)](https://travis-ci.org/JuliaData/SplitApplyCombine.jl)
+[![Coverage Status](https://coveralls.io/repos/JuliaData/SplitApplyCombine.jl/badge.svg?branch=master&service=github)](https://coveralls.io/github/JuliaData/SplitApplyCombine.jl?branch=master)
+[![codecov.io](http://codecov.io/github/JuliaData/SplitApplyCombine.jl/coverage.svg?branch=master)](http://codecov.io/github/JuliaData/SplitApplyCombine.jl?branch=master)
 
 This is a playground for exploring data manipulation functions in Julia - their
 semantics, design, and functionality. A particular emphasis is placed on ensuring
@@ -90,10 +90,10 @@ that may be extended and built upon by other packages.
 
 # API
 
-The package currently implements and exports `group`, `groupinds`, `groupview`,
-`groupreduce`, `innerjoin` and `leftgroupjoin`. (Consideration may also be given to
-`innerjoinreduce` and `leftgroupjoinreduce` for the same reasons as `mapreduce` and
-`groupreduce`).
+The package currently implements and exports `only`, `mapmany`, `flatten`, `group`,
+`groupinds`, `groupview`, `groupreduce`, `innerjoin` and `leftgroupjoin`, as well as the 
+`@_` macro. Expect this list
+to grow.
 
 ## Grouping
 
@@ -250,6 +250,15 @@ Stacktrace:
  [1] only(::Array{Int64,1}) at /home/ferris/.julia/v0.7/SAC/src/only.jl:10
 ```
 
+### `@_` macro
+
+This adds the ability for piping to use the `_` to create anonymous functions quickly and
+easily.
+
+#### Example:
+
+`@_ data |> reduce(+,_)` expands to `data |> x->reduce(+,_)`
+
 ## TODO
 
 The API could be improved by providing default join comparison and mapping operations which
@@ -397,6 +406,8 @@ be an equivalent form for `let f = function (x); ...; end; ....; end`.
 
 ### Piping
 
+Note that this has been implemented here under the `@_` macro.
+
 Piping currently only works "natively" for single argument functions, but many data methods
 contain multiple slots for data and functions to appear. If a multi-function argument is
 required, the user is forced to write an extra anonymous using `->` a few characters after
@@ -507,7 +518,7 @@ In all cases, it would be much more readable to use `NamedTuple`, and packages l
 anonymous functions.
 
 
-## Things I found in LINQ that aren't in Julia
+## Things in LINQ that aren't in Julia
 
 LINQ provides a set of methods for classes that fulfill the `IEnumerable` interface. Most of
 them are either much like Julia's `Base` functions (or those container here), or not really
@@ -517,22 +528,21 @@ desirable):
 
  * Collections can nominate "default values" - I assume these are used for inference-style
    purposes but I'm not sure.
- * `GroupJoin` - a more sensible version of SQL left outer joins.
+ * `GroupJoin` - a more sensible version of SQL left outer joins. See `leftgroupjoin`.
  * `SelectMany` - like `map` (what they call `Select`) except each mapping is one-to-many
-   elements.
+   elements. See `mapmany`.
  * `SequenceEqual` - equality of elements (ignoring keys). This may be different to `==` in
-   Julia with new upcoming `Associative` interface. Could be `all(map(==, iter1, iter2))` or
-   `mapreduce(==, &, true, iter1, iter2)` in Julia currently (but maybe multi-iterator `all`
-   is better?).
+   Julia. Could be `all(map(==, iter1, iter2))` or `mapreduce(==, &, true, iter1, iter2)` in
+   Julia (but maybe multi-iterator `all` is better?).
  * `Single` - returns the one and only element of an `IEnumerable`. Throws if there are e.g.
-   two elements. Perhaps could be `only(iter)` in Julia?
+   two elements. See `only`.
  * `TakeWhile` - returns the head of a sequence until some element-predicate is `false`.
  * `ThenBy` - enables lexicographical ordering.
 
 It's also an interesting question whether `map`, `filter`, and so-on should use 
 lazy/deferred evaluation in Julia...
 
-## Some things I've read (obviously a subset)
+## Some related reading (obviously a subset)
 
  * http://www.andl.org/the-third-manifesto-paraphrase-1/
  * https://github.com/ggaughan/dee (http://www.quicksort.co.uk/DeeDoc.html)

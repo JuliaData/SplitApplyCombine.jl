@@ -28,7 +28,6 @@ include("map.jl")
 include("group.jl")
 include("innerjoin.jl")
 include("leftgroupjoin.jl")
-include("only.jl")
 
 # Syntax
 include("underscore.jl")
@@ -51,6 +50,15 @@ Base.last(n::Nullable) = get(n)
     end
     return n.value
 end
+
+# mini-compat (more for my knowledge than anything)
+if VERSION < v"0.7-"
+    Base.keys(v::AbstractVector) = indices(v)[1]
+    Base.keys(a::AbstractArray) = CartesianRange(indices(a)...)
+    Base.keys(::NTuple{N,Any}) where {N} = Base.OneTo(N)
+    Base.keys(::Number) = Base.OneTo(1)
+end
+
 
 end # module
 

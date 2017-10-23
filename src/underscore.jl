@@ -46,7 +46,7 @@ pipe operators.
 
 `data |> reduce(+,_)`  expands to  `data |> x->reduce(+,_)`
 
-`data |> foo(bar(_))`  expands to  `data |> x->foo(bar(x))
+`data |> foo(bar(_))`  expands to  `data |> x->foo(bar(x))`
 
 """
 macro _(ex)
