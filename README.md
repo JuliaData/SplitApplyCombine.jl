@@ -1,18 +1,18 @@
-# SAC - Split, apply, combine
+# Split, apply, combine
 
 [![Build Status](https://travis-ci.org/andyferris/SAC.jl.svg?branch=master)](https://travis-ci.org/andyferris/SAC.jl)
 [![Coverage Status](https://coveralls.io/repos/andyferris/SAC.jl/badge.svg?branch=master&service=github)](https://coveralls.io/github/andyferris/SAC.jl?branch=master)
 [![codecov.io](http://codecov.io/github/andyferris/SAC.jl/coverage.svg?branch=master)](http://codecov.io/github/andyferris/SAC.jl?branch=master)
 
-This is my personal playground for exploring data manipulation functions in Julia - their
+This is a playground for exploring data manipulation functions in Julia - their
 semantics, design, and functionality. A particular emphasis is placed on ensuring
 split-apply-combine strategies are easy to apply, and work relatively optimally for
 arbitrary iterables and data structures included in `Base`. 
 
-This package consists of two products: the code, and this document. The code provides an
+This package currently consists of two products: the code, and this document. The code provides an
 example implementation of some of the things discussed in this document. This document is
 a place to organize thoughts on the data manipulation tools provided in `Base` Julia and
-my personal musings.
+musings on where to go next.
 
 ## Motivation
 
