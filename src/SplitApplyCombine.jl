@@ -1,4 +1,4 @@
-module SAC
+module SplitApplyCombine
 
 using Base: @propagate_inbounds, promote_op
 
