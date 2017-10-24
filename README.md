@@ -299,7 +299,7 @@ easily.
 
 #### Example:
 
-`@_ data |> reduce(+,_)` expands to `data |> x->reduce(+,_)`
+`@_ data |> reduce(+,_)` expands to `data |> x->reduce(+,x)`
 
 ## TODO
 

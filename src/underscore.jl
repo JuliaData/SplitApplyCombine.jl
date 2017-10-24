@@ -44,7 +44,7 @@ pipe operators.
 
 # Examples
 
-`data |> reduce(+,_)`  expands to  `data |> x->reduce(+,_)`
+`data |> reduce(+,_)`  expands to  `data |> x->reduce(+,x)`
 
 `data |> foo(bar(_))`  expands to  `data |> x->foo(bar(x))`
 
