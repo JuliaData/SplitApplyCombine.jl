@@ -489,7 +489,7 @@ and simpler table names.
 Here's a `innerjoin` example, adapted from the *DataFrames.jl* docs:
 
 ```julia
-julia> using SAC
+julia> using SplitApplyCombine
 
 julia> employee_id_name = [(20, "John Doe"), (40, "Jane Doe")]
 2-element Array{Tuple{Int64,String},1}:
