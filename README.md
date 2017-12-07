@@ -51,7 +51,7 @@ would benefit from the same - figuratively (not literally) an `AbstractTable` an
    and high programmer productivity? Should we implement and share a pretty direct
    implementation of relational algebra, in analogy to `Base.LinAlg`?
 
-This package is skewed towards the first question; other work focusses more on the second.
+This package is skewed towards the first question; other work focuses more on the second.
 But in my opinion a successful end result will address both satisfactorily.
 
 ## Recent and upcoming changes
@@ -140,7 +140,7 @@ julia> mapmany(x -> 1:x, [1,2,3])
 ### `flatten(a)`
 
 Takes a collection of collections `a` and returns a collection containing all the elements
-of the subcollecitons of `a`. Equivalent to `mapmany(idenity, a)`.
+of the subcollecitons of `a`. Equivalent to `mapmany(identity, a)`.
 
 #### Example:
 
@@ -250,7 +250,7 @@ Dict{Bool,Int64} with 2 entries:
 
 ## Joining
 
-### `innerjoin([lkey = identity], [rkey = idenity], [f = tuple], [comparison = isequal], left, right)`
+### `innerjoin([lkey = identity], [rkey = identity], [f = tuple], [comparison = isequal], left, right)`
 
 *Note*: it might be more natural to call this function `join`, except it clashes with the
 existing `Base.join` string operation.
