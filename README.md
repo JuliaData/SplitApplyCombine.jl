@@ -1,5 +1,7 @@
 # Split, apply, combine
 
+*Strategies for nested data in Julia*
+
 [![Build Status](https://travis-ci.org/JuliaData/SplitApplyCombine.jl.svg?branch=master)](https://travis-ci.org/JuliaData/SplitApplyCombine.jl)
 [![Coverage Status](https://coveralls.io/repos/github/JuliaData/SplitApplyCombine.jl/badge.svg?branch=master)](https://coveralls.io/github/JuliaData/SplitApplyCombine.jl?branch=master)
 [![codecov.io](http://codecov.io/github/JuliaData/SplitApplyCombine.jl/coverage.svg?branch=master)](http://codecov.io/github/JuliaData/SplitApplyCombine.jl?branch=master)
@@ -8,11 +10,6 @@ This is a playground for exploring data manipulation functions in Julia - their
 semantics, design, and functionality. A particular emphasis is placed on ensuring
 split-apply-combine strategies are easy to apply, and work relatively optimally for
 arbitrary iterables and data structures included in `Base`. 
-
-This package currently consists of two products: the code, and this document. The code provides an
-example implementation of some of the things discussed in this document. This document is
-a place to organize thoughts on the data manipulation tools provided in `Base` Julia and
-musings on where to go next.
 
 ## Motivation
 
@@ -54,21 +51,6 @@ would benefit from the same - figuratively (not literally) an `AbstractTable` an
 This package is skewed towards the first question; other work focuses more on the second.
 But in my opinion a successful end result will address both satisfactorily.
 
-## Recent and upcoming changes
-
-There are some particular changes posed for v0.7 which affect the design considerations
-here.
-
- * The iteration scheme for `Associative` may move closer to that of `AbstractArray`.
-   It is assumed that the iterations will only consist of the *values* of the dictionary,
-   rather than key-value `Pair`s. The `pairs(dict)` function will return an iterable over
-   key-value pairs.
-
- * `NamedTuple` and other potential changes like `getfield` overloading, anonymous structs,
-   and/or inter-procedural constant propagation in inference, will enable simple row-based
-   and columb-based storage of strongly typed tables. For example, a `Vector{<:NamedTuple}`
-   could pose as a basic, row-based, in-memory table suitable for REPL work.
-
 ## Tabular data
 
 The primary interface for manipulating tabular data is the *relational algebra*. A
@@ -91,9 +73,8 @@ that may be extended and built upon by other packages.
 # API
 
 The package currently implements and exports `only`, `mapmany`, `flatten`, `group`,
-`groupinds`, `groupview`, `groupreduce`, `innerjoin` and `leftgroupjoin`, as well as the 
-`@_` macro. Expect this list
-to grow.
+`groupinds`, `groupview`, `groupreduce`, `innerjoin` and `leftgroupjoin`, `splitdims`, as
+well as the `@_` macro. Expect this list to grow.
 
 ## Generic operations on collections
 
@@ -385,99 +366,6 @@ positional arguments, and share the same keyword names where they overlap. One c
 imagine removing `mapreduce` and instead putting an `f` keyword argument into `reduce` with
 default as `identity`, as well as adding a filter to reductions, a mapping to `filter`,
 etc.
-
-While v1.0 will solve the speed problems of using keyword arguments, there are still a few
-syntactic issues that make working with keyword arguments a bit more difficult than
-necessary. Particularly, I propose improvements to `do` syntax and to piping, below.
-
-### `do` syntax generalization
-
-The `do` syntax allows one to specify a closure such that it appears in code in the order
-that it is executed. However, it is (a) frequently confusing to newcomers and (b) is very
-picky about where the function is injected. For example, we can't specify `op` in
-`mapreduce` via the `do` syntax.
-
-I propose to use a `with` keyboard that enables more transparency, flexibility, and reads
-better as English. We begin with the current syntax:
-
-```julia
-map(iter) do x
-    x + 1
-end
-```
-
-I see the following as more natural, using `with` which is much like `let` but working in
-the opposite order:
-
-```julia
-map(f, iter) with f = function (x)
-   x + 1
-end
-```
-
-which lowers to
-```julia
-let f = function (x); x + 1; end;
-    map(f, iter)
-end
-```
-
-Now we can use `with` to inject `f` anywhere in the expression on the left, including in
-the place of keyword arguments or a positional argument other than the first. One could
-alternatively imagine a `with` that creates a block instead
-
-```julia
-mapreduce(f, op, iter) with
-    a = 2
-    f(x) = a*x
-    op(x,y) = (x+y)^a
-end
-```
-
-which lowers to
-
-```julia
-let a=2, f(x) = a*x, op(x,y) = (x+y)^a
-    mapreduce(f, op, iter)
-end
-```
-
-While investigating this, we also found that `let` doesn't support the standard long
-function form as assigment, as in we should allow `let function f(x); ...; end; ....; end`
-be an equivalent form for `let f = function (x); ...; end; ....; end`.
-
-### Piping
-
-Note that this has been implemented here under the `@_` macro.
-
-Piping currently only works "natively" for single argument functions, but many data methods
-contain multiple slots for data and functions to appear. If a multi-function argument is
-required, the user is forced to write an extra anonymous using `->` a few characters after
-typing `|>`, which seems to me to be a jarring experience. I propose that `|>`
-automatically creataes a function of `_`, which is the output from the previous statement.
-Compare the following:
-
-```julia
-data |> x -> reduce(+, x) |> iseven
-data |> reduce(+, _) |> iseven(_)
-```
-I prefer the latter because (a) it's quicker to express the `reduce` operation, and (b) the
-more verbose `iseven` statement visually looks like a function call, distinct from the
-`data` on the left, and (c) the `|>` operators visually seperate better without `->`
-appearing in-between.
-
-Some functions may return multiple outputs. Consider using `eig` to get the determinant of
-a matrix:
-```julia
-matrix |> eig |> x -> prod(x[1])
-matrix |> eig(_) |> prod(_[1])
-```
-
-Data operations may be particularly complex and benifit from this syntax.
-```julia
-table1 |> x -> join((r1,r2 -> (r1...,r2...), x, table2) |> x -> group(r->r.col, x) |> length
-table1 |> join((r1,r2 -> (r1...,r2...), _, table2) |> group(r->r.col, _) |> length(_)
-```
 
 ## Examples
 

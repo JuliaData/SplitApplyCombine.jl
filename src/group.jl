@@ -79,7 +79,7 @@ end
 
 groupinds(by, iter1, iter2, iters...) = groupinds((x -> by(x...)), zip(iter1, iter2, iters...))
 
-struct Groups{K, V, T, Inds} <: Associative{K, V}
+struct Groups{K, V, T, Inds} <: AbstractDict{K, V}
     parent::T
     inds::Inds
 end

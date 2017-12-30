@@ -21,4 +21,6 @@ function only(::NTuple{N,Any}) where N
     throw(ArgumentError("Collection must have exactly one element (input has $N elements)"))
 end
 
-only(x::Nullable) = get(x)
+if VERSION < v"0.7-"
+    only(x::Nullable) = get(x)
+end
