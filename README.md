@@ -100,6 +100,26 @@ Stacktrace:
  [1] only(::Array{Int64,1}) at /home/ferris/.julia/v0.7/SAC/src/only.jl:10
 ```
 
+### `splitdims(array, [dims])`
+
+Split a multidimensional array into nested arrays of arrays, splitting the specified 
+dimensions `dims` to the "outer" array, leaving the remaining dimension in the "inner"
+array. By default, the last dimension is split into the outer array.
+
+#### Examples:
+
+```julia
+julia> splitdims([1 2; 3 4])
+2-element Array{Array{Int64,1},1}:
+ [1, 3]
+ [2, 4]
+
+julia> splitdims([1 2; 3 4], 1)
+2-element Array{Array{Int64,1},1}:
+ [1, 2]
+ [3, 4]
+```
+
 ### `mapmany(f, iters...)`
 
 Like `map`, but `f(x...)` for each `x ∈ zip(iters...)` may return an arbitrary number of 
