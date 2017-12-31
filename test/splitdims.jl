@@ -15,5 +15,5 @@
     @test splitdims([1,2,3], ()) == fill([1,2,3], ())
 
     # Array{0}
-    @test splitdims(fill(1, ())) == fill(fill(1, ()), ())
+    @test_broken splitdims(fill(1, ())) == fill(fill(1, ()), ())
 end
