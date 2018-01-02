@@ -17,3 +17,12 @@
     # Array{0}
     @test_broken splitdims(fill(1, ())) == fill(fill(1, ()), ())
 end
+
+@testset "splitdimsview" begin
+    # Matrix
+    @test splitdimsview([1 2; 3 4]) == [[1,3], [2,4]]
+    @test splitdimsview([1 2; 3 4], 1) == [[1,2], [3,4]]
+    @test splitdimsview([1 2; 3 4], 2) == [[1,3], [2,4]]
+    @test splitdimsview([1 2; 3 4], (1,)) == [[1,2], [3,4]]
+    @test splitdimsview([1 2; 3 4], (2,)) == [[1,3], [2,4]]
+end

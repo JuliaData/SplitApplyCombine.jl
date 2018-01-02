@@ -14,7 +14,7 @@ import Base: merge, merge!
 export mapmany
 
 # collections -> collections of collections
-export group, groupinds, Groups, groupview, groupreduce, splitdims
+export group, groupinds, Groups, groupview, groupreduce, splitdims, splitdimsview, SplitDimsArray
 
 # colletions of collections -> collections
 export flatten #, flattenview

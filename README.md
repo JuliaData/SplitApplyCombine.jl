@@ -120,6 +120,10 @@ julia> splitdims([1 2; 3 4], 1)
  [3, 4]
 ```
 
+### `splitdimsview(array, [dims])`
+
+Like `splitdimsview(array, dims)` except creating a lazy view of the nested struture.
+
 ### `mapmany(f, iters...)`
 
 Like `map`, but `f(x...)` for each `x ∈ zip(iters...)` may return an arbitrary number of 
@@ -137,6 +141,8 @@ julia> mapmany(x -> 1:x, [1,2,3])
  2
  3
 ```
+
+(Note that, semantically, `filter` could be thought of as a special case of `mapmany`.)
 
 ### `flatten(a)`
 
