@@ -24,7 +24,7 @@ julia> splitdims([1 2; 3 4], 1)
 """
 @inline splitdims(a::AbstractArray, i::Int) = _splitdims(a, Val((i,))) # @inline forces constant propagation
 @inline splitdims(a::AbstractArray) = _splitdims(a, Val((ndims(a),)))
-@inline splitdims(a::AbstractArray{0}) = _splitdims(a, Val(()))
+@inline splitdims(a::AbstractArray{<:Any, 0}) = _splitdims(a, Val(()))
 @inline splitdims(a::AbstractArray, dims::Tuple{Vararg{Int}}) = _splitdims(a, Val(dims))
 
 function _splitdims(a::AbstractArray{<:Any, n}, ::Val{dims}) where {n, dims}
@@ -39,7 +39,7 @@ function _splitdims(a::AbstractArray{<:Any, n}, ::Val{dims}) where {n, dims}
     alloc = false
     for i in CartesianIndices(outeraxes)
         inds = slice_inds(i, Val(dims), Val(n))
-        tmp = a[inds...]
+        tmp = getindices(a, inds...)
         if !alloc
             out = similar(a, typeof(tmp), outeraxes)
             alloc = true
@@ -125,15 +125,16 @@ julia> splitdims([1 2; 3 4], 1)
 ```
 """
 @inline splitdimsview(a::AbstractArray) = SplitDimsArray{new_eltype(typeof(a), Val((ndims(a),))), 1, (ndims(a),), typeof(a)}(a)
+@inline splitdimsview(a::AbstractArray{<:Any, 0}) = SplitDimsArray{new_eltype(typeof(a), Val(())), 0, (), typeof(a)}(a)
 @inline splitdimsview(a::AbstractArray, i::Int) = SplitDimsArray{new_eltype(typeof(a), Val((i,))), 1, (i,), typeof(a)}(a)
 @inline function splitdimsview(a::AbstractArray{<:Any, N}, dims::NTuple{M, Int}) where {N, M}
-    SplitDimsArray{new_eltype(typeof(a), Val(dims)), _subtract(N,M), dims, typeof(a)}(a)
+    SplitDimsArray{new_eltype(typeof(a), Val(dims)), M, dims, typeof(a)}(a)
 end
 
 @pure _subtract(N::Int, M::Int) = N - M
 
 function new_eltype(::Type{A}, ::Val{Dims}) where {A, Dims}
-    return Core.Inference.return_type(view, splat_inds(Tuple{A, Core.Inference.return_type(slice_inds, Tuple{CartesianIndex{_subtract(ndims(A), length(Dims))}, Val{Dims}, Val{ndims(A)}})}))
+    return Core.Inference.return_type(view, splat_inds(Tuple{A, Core.Inference.return_type(slice_inds, Tuple{CartesianIndex{length(Dims)}, Val{Dims}, Val{ndims(A)}})}))
 end
 
 @pure function splat_inds(::Type{T}) where {T <: Tuple}
