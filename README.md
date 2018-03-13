@@ -13,7 +13,7 @@ arbitrary iterables and data structures included in `Base`.
 
 ## Motivation
 
-Julia has proven itself as a techincal computing language with some outstanding attibutes.
+Julia has proven itself as a technical computing language with some outstanding attibutes.
 I'm particularly attracted to its user productivity, execution speed and flexibity. Because
 so much `AbstractArray` and linear algebra functionality is built into `Base`, along with
 strong generic programming abilities and well thought-out APIs which can be extended from
