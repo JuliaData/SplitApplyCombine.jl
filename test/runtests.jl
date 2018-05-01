@@ -11,5 +11,6 @@ include("leftgroupjoin.jl")
 include("only.jl")
 include("map.jl")
 include("splitdims.jl")
+include("combinedims.jl")
 
 include("underscore.jl")

@@ -14,10 +14,12 @@ import Base: merge, merge!
 export mapmany
 
 # collections -> collections of collections
-export group, groupinds, Groups, groupview, groupreduce, splitdims, splitdimsview, SplitDimsArray
+export group, groupinds, Groups, groupview, groupreduce
+export splitdims, splitdimsview, SplitDimsArray
 
 # colletions of collections -> collections
 export flatten #, flattenview
+export combinedims, combinedimsview, CombineDimsArray
 
 # collections of collections -> collections of collections
 export innerjoin, ⨝, leftgroupjoin
@@ -30,6 +32,7 @@ include("group.jl")
 include("innerjoin.jl")
 include("leftgroupjoin.jl")
 include("splitdims.jl")
+include("combinedims.jl")
 
 # Syntax
 include("underscore.jl")
@@ -41,7 +44,7 @@ include("underscore.jl")
 Base.haskey(a, i) = i ∈ keys(a) 
 
 # mini-compat (more for my knowledge than anything)
-if VERSION < v"0.7-"
+@static if VERSION < v"0.7-"
     Base.keys(v::AbstractVector) = indices(v)[1]
     Base.keys(a::AbstractArray) = CartesianRange(indices(a)...)
     Base.keys(::NTuple{N,Any}) where {N} = Base.OneTo(N)
@@ -54,18 +57,11 @@ if VERSION < v"0.7-"
     Base.first(n::Nullable) = get(n)
     Base.last(n::Nullable) = get(n)
     @propagate_inbounds function Base.getindex(n::Nullable)
-    @boundscheck if !n.hasvalue
-        return NullException()
+        @boundscheck if !n.hasvalue
+            return NullException()
+        end
+        return n.value
     end
-    return n.value
 end
-
-end
-
 
 end # module
-
-# Random thoughts:
-
-# merge! many other mutating ops returns collection, so:
-# why does setindex! return the set value(s), not the collection???

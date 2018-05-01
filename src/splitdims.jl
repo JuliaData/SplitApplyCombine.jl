@@ -72,19 +72,33 @@ end
     return nothing
 end
 
-@generated function slice_inds(i::CartesianIndex, ::Val{dims}, ::Val{n}) where {dims, n}
-    out = []
-    for j in 1:n
-        k = findfirst(equalto(j), dims)
-        if k == 0
-            out = [out..., :]
-        else
-            out = [out..., :(i[$k])]
+@static if VERSION < v"0.7-"
+    @generated function slice_inds(i::CartesianIndex, ::Val{dims}, ::Val{n}) where {dims, n}
+        out = []
+        for j in 1:n
+            k = findfirst(==(j), dims)
+            if k === 0
+                out = [out..., :]
+            else
+                out = [out..., :(i[$k])]
+            end
         end
+        return :(tuple($(out...)))
     end
-    return :(tuple($(out...)))
+else
+    @generated function slice_inds(i::CartesianIndex, ::Val{dims}, ::Val{n}) where {dims, n}
+        out = []
+        for j in 1:n
+            k = findfirst(==(j), dims)
+            if k === nothing
+                out = [out..., :]
+            else
+                out = [out..., :(i[$k])]
+            end
+        end
+        return :(tuple($(out...)))
+    end
 end
-
 
 ## Lazy version
 
@@ -133,9 +147,16 @@ end
 
 @pure _subtract(N::Int, M::Int) = N - M
 
-function new_eltype(::Type{A}, ::Val{Dims}) where {A, Dims}
-    return Core.Inference.return_type(view, splat_inds(Tuple{A, Core.Inference.return_type(slice_inds, Tuple{CartesianIndex{length(Dims)}, Val{Dims}, Val{ndims(A)}})}))
+@static if VERSION < v"0.7-"
+    function new_eltype(::Type{A}, ::Val{Dims}) where {A, Dims}
+        return Core.Inference.return_type(view, splat_inds(Tuple{A, Core.Inference.return_type(slice_inds, Tuple{CartesianIndex{length(Dims)}, Val{Dims}, Val{ndims(A)}})}))
+    end
+else
+    function new_eltype(::Type{A}, ::Val{Dims}) where {A, Dims}
+        return Core.Compiler.return_type(view, splat_inds(Tuple{A, Core.Compiler.return_type(slice_inds, Tuple{CartesianIndex{length(Dims)}, Val{Dims}, Val{ndims(A)}})}))
+    end
 end
+
 
 @pure function splat_inds(::Type{T}) where {T <: Tuple}
     a = T.parameters[1]
