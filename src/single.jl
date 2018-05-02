@@ -1,4 +1,4 @@
-function only(iter)
+function single(iter)
     i = start(iter)
     if done(iter, i)
         throw(ArgumentError("Collection must have exactly one element (input is empty)"))
@@ -11,16 +11,16 @@ function only(iter)
     end
 end
 
-function only(::Tuple{})
+function single(::Tuple{})
     throw(ArgumentError("Collection must have exactly one element (input is empty)"))
 end
-function only(t::Tuple{Any})
+function single(t::Tuple{Any})
     return t[1]
 end
-function only(::NTuple{N,Any}) where N
+function single(::NTuple{N,Any}) where N
     throw(ArgumentError("Collection must have exactly one element (input has $N elements)"))
 end
 
 if VERSION < v"0.7-"
-    only(x::Nullable) = get(x)
+    single(x::Nullable) = get(x)
 end

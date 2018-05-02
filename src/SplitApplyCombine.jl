@@ -7,7 +7,7 @@ using Indexing
 export @_
 
 # collections -> scalar
-export only
+export single
 
 # collections -> collections
 import Base: merge, merge!
@@ -25,7 +25,7 @@ export combinedims, combinedimsview, CombineDimsArray
 export innerjoin, ⨝, leftgroupjoin
 # `pivot` or similar - like transpose, but nested.
 
-include("only.jl")
+include("single.jl")
 include("merge.jl")
 include("map.jl")
 include("group.jl")

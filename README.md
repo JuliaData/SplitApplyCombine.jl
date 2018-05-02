@@ -72,32 +72,32 @@ that may be extended and built upon by other packages.
 
 # API
 
-The package currently implements and exports `only`, `mapmany`, `flatten`, `group`,
+The package currently implements and exports `single`, `mapmany`, `flatten`, `group`,
 `groupinds`, `groupview`, `groupreduce`, `innerjoin` and `leftgroupjoin`, `splitdims`, as
 well as the `@_` macro. Expect this list to grow.
 
 ## Generic operations on collections
 
-### `only(iter)`
+### `single(iter)`
 
-Returns the only element of the collection `iter`. If it contains zero elements or more than
-one element, an error is thrown.
+Returns the single, one-and-only element of the collection `iter`. If it contains zero
+elements or more than one element, an error is thrown.
 
 #### Example:
 
 ```julia
-julia> only([3])
+julia> single([3])
 3
 
-julia> only([])
+julia> single([])
 ERROR: ArgumentError: Collection must have exactly one element (input was empty)
 Stacktrace:
- [1] only(::Array{Any,1}) at /home/ferris/.julia/v0.7/SAC/src/only.jl:4
+ [1] single(::Array{Any,1}) at /home/ferris/.julia/v0.7/SAC/src/single.jl:4
 
-julia> only([3, 10])
+julia> single([3, 10])
 ERROR: ArgumentError: Collection must have exactly one element (input contained more than one element)
 Stacktrace:
- [1] only(::Array{Int64,1}) at /home/ferris/.julia/v0.7/SAC/src/only.jl:10
+ [1] single(::Array{Int64,1}) at /home/ferris/.julia/v0.7/SAC/src/single.jl:10
 ```
 
 ### `splitdims(array, [dims])`
@@ -491,7 +491,7 @@ desirable):
    Julia. Could be `all(map(==, iter1, iter2))` or `mapreduce(==, &, true, iter1, iter2)` in
    Julia (but maybe multi-iterator `all` is better?).
  * `Single` - returns the one and only element of an `IEnumerable`. Throws if there are e.g.
-   two elements. See `only`.
+   two elements. See `single`.
  * `TakeWhile` - returns the head of a sequence until some element-predicate is `false`.
  * `ThenBy` - enables lexicographical ordering.
 
