@@ -76,7 +76,7 @@ end
     @generated function slice_inds(i::CartesianIndex, ::Val{dims}, ::Val{n}) where {dims, n}
         out = []
         for j in 1:n
-            k = findfirst(==(j), dims)
+            k = findfirst(dims .== j)
             if k === 0
                 out = [out..., :]
             else
@@ -108,7 +108,7 @@ end
 
 Base.parent(a::SplitDimsArray) = a.parent
 
-Base.axes(a::SplitDimsArray{T, N, Dims}) where {T, N, Dims} = getindices(axes(parent(a)), Dims)
+axes(a::SplitDimsArray{T, N, Dims}) where {T, N, Dims} = getindices(axes(parent(a)), Dims)
 Base.IndexStyle(::SplitDimsArray) = Base.IndexCartesian()
 @propagate_inbounds function Base.getindex(a::SplitDimsArray{T, N, Dims}, i::Int...) where {T, N, Dims}
     return view(parent(a), slice_inds(CartesianIndex(i), Val(Dims), Val(ndims(parent(a))))...)
@@ -156,7 +156,6 @@ else
         return Core.Compiler.return_type(view, splat_inds(Tuple{A, Core.Compiler.return_type(slice_inds, Tuple{CartesianIndex{length(Dims)}, Val{Dims}, Val{ndims(A)}})}))
     end
 end
-
 
 @pure function splat_inds(::Type{T}) where {T <: Tuple}
     a = T.parameters[1]

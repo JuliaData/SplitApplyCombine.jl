@@ -6,7 +6,11 @@
     @test splitdims([1 2; 3 4], (1,)) == [[1,2], [3,4]]
     @test splitdims([1 2; 3 4], (2,)) == [[1,3], [2,4]]
     @test splitdims([1 2; 3 4], ()) == fill([1 2; 3 4], ())
-    tmp = Matrix{Array{Int, 0}}(undef,2,2) # Stupid hvcat removes the Array{0}'s...
+    if VERSION < v"0.7-"
+        tmp = Matrix{Array{Int, 0}}(2,2) # Stupid hvcat removes the Array{0}'s...
+    else
+        tmp = Matrix{Array{Int, 0}}(undef,2,2) # Stupid hvcat removes the Array{0}'s...
+    end
     tmp[1,1] = fill(1, ()); tmp[1,2] = fill(2, ()); tmp[2,1] = fill(3, ()); tmp[2,2] = fill(4, ())
     @test splitdims([1 2; 3 4], (1, 2)) == tmp
     tmp[1,2][] = 3; tmp[2,1][] = 2
@@ -29,7 +33,11 @@ end
     @test splitdimsview([1 2; 3 4], (1,)) == [[1,2], [3,4]]
     @test splitdimsview([1 2; 3 4], (2,)) == [[1,3], [2,4]]
     @test splitdimsview([1 2; 3 4], ()) == fill([1 2; 3 4], ())
-    tmp = Matrix{Array{Int, 0}}(undef,2,2) # Stupid hvcat removes the Array{0}'s...
+    if VERSION < v"0.7-"
+        tmp = Matrix{Array{Int, 0}}(2,2) # Stupid hvcat removes the Array{0}'s...
+    else
+        tmp = Matrix{Array{Int, 0}}(undef,2,2) # Stupid hvcat removes the Array{0}'s...
+    end
     tmp[1,1] = fill(1, ()); tmp[1,2] = fill(2, ()); tmp[2,1] = fill(3, ()); tmp[2,2] = fill(4, ())
     @test splitdimsview([1 2; 3 4], (1, 2)) == tmp
     tmp[1,2][] = 3; tmp[2,1][] = 2

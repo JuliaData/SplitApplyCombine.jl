@@ -174,7 +174,7 @@ function groupreduce(by, f, op, iter)
     out = Dict{K, V}()
     for x ∈ iter
         key = by(x)
-        dict_index = Base.ht_keyindex2!(out, key)
+        dict_index = ht_keyindex2!(out, key)
         if dict_index > 0
             @inbounds out.vals[dict_index] = op(out.vals[dict_index], f(x))
         else
@@ -203,7 +203,7 @@ function groupreduce(by, f, op, v0, iter)
     out = Dict{K, V}()
     for x ∈ iter
         key = by(x)
-        dict_index = Base.ht_keyindex2!(out, key)
+        dict_index = ht_keyindex2!(out, key)
         if dict_index > 0
             @inbounds out.vals[dict_index] = op(out.vals[dict_index], f(x))
         else
