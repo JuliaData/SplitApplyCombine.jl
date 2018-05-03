@@ -15,19 +15,6 @@ using Indexing
     Base.keys(::NTuple{N,Any}) where {N} = Base.OneTo(N)
     Base.keys(::Number) = Base.OneTo(1)
 
-    # A Nullable is a container with 0 or 1 values... so...
-    Base.start(::Nullable) = false
-    Base.done(n::Nullable, i::Bool) = isnull(n) | i
-    Base.next(n::Nullable, i::Bool) = (n.valie, true)
-    Base.first(n::Nullable) = get(n)
-    Base.last(n::Nullable) = get(n)
-    @propagate_inbounds function Base.getindex(n::Nullable)
-        @boundscheck if !n.hasvalue
-            return NullException()
-        end
-        return n.value
-    end
-
     @pure Base.Val(x) = Val{x}()
     @inline Base.ntuple(f, ::Val{x}) where {x} = ntuple(f, Val{x})
 else

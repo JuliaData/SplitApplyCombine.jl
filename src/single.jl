@@ -20,7 +20,3 @@ end
 function single(::NTuple{N,Any}) where N
     throw(ArgumentError("Collection must have exactly one element (input has $N elements)"))
 end
-
-if VERSION < v"0.7-"
-    single(x::Nullable) = get(x)
-end
