@@ -77,8 +77,6 @@ function groupinds(by, iter)
     return out
 end
 
-groupinds(by, iter1, iter2, iters...) = groupinds((x -> by(x...)), zip(iter1, iter2, iters...))
-
 struct Groups{K, V, T, Inds} <: AbstractDict{K, V}
     parent::T
     inds::Inds
@@ -138,9 +136,6 @@ function groupview(by, iter)
     V = promote_op(view, iter, eltype(inds))
     return Groups{keytype(inds), V, typeof(iter), typeof(inds)}(iter, inds)
 end
-
-groupview(by, iter1, iter2, iters...) = groupview((x -> by(x...)), zip(iter1, iter2, iters...))
-
 
 """
     groupreduce(by, op, iter)

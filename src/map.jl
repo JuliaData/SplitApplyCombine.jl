@@ -26,7 +26,7 @@ function mapmany(f, a)
     return out
 end
 
-mapmany(f, a, b, c...) = mapmany((x,y,z...)->f(x,y,z...), zip(a, b, c...))
+mapmany(f, a, b, c...) = mapmany(x->f(x...), zip(a, b, c...))
 
 """
     flatten(a)

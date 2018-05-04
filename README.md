@@ -243,7 +243,7 @@ For *indexable* collections `iter`, returns the indices/keys associated with eac
 Similar to `group`, it supports multiple collections (with identical indices/keys) via the
 method `groupinds(by, iters...)`.
 
-#### Example
+#### Example:
 
 ```julia
 julia> groupinds(iseven, [3,4,2,6,5,8])
@@ -257,7 +257,7 @@ Dict{Bool,Array{Int64,1}} with 2 entries:
 Similar to `group(by, iter)` but the grouped elements are a view of the original collection.
 Uses `groupinds` to construct the appropriate container.
 
-#### Example
+#### Example:
 
 ```julia
 julia> v = [3,4,2,6,5,8]
@@ -313,7 +313,7 @@ Performs a relational-style join operation between iterables `left` and `right`,
 a collection of elements `f(l, r)` for which `comparison(lkey(l), rkey(r))` is `true` where
 `l ∈ left`, `r ∈ right.`
 
-#### Example"
+#### Example:
 
 ```julia
 julia> innerjoin(iseven, iseven, tuple, ==, [1,2,3,4], [0,1,2])
