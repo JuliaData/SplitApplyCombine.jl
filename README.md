@@ -14,15 +14,19 @@ and in an optimized way with the data structures included in Julia's standard li
 The tools come in the form of high-level functions that operate on iterable or indexable
 containers in an intuitive and simple way, extending Julia's in-built `map`, `reduce` and
 `filter` commands to a wider range of operations. Just like these `Base` functions, the
-functions here like `group` and `innerjoin` are able to be overloaded and optimized by users
-and the maintainers of other packages for their own, custom data containers.
+functions here like `invert`, `group` and `innerjoin` are able to be overloaded and
+optimized by users and the maintainers of other packages for their own, custom data
+containers.
 
 One side goal is to provide sufficient functionality to satisfy the need to manipulate
 "relational" data (meaning tables and dataframes) with basic in-built Julia data containers
 like `Vector`s of `NamedTuple`s and higher-level functions in a "standard" Julia style.
-I am exploring this idea further in another package under development called
+Pay particular to the `invert` family of functions, which effectively allows you to switch
+between a "struct-of-arrays" and an "array-of-structs" interpretation of your data. I am
+exploring the idea of using arrays of named tuples for a fast table package in another
+package under development called
 [MinimumViableTables](https://github.com/andyferris/MinimumViableTables.jl)), which adds
-acceleration indexes but otherwise uses a generic interface.
+acceleration indexes but otherwise attempts to use a generic "native Julia" interface.
 
 ## Quick start
 
@@ -39,15 +43,22 @@ julia> using SplitApplyCombine
 julia> single([3]) # return the one-and-only element of the input
 3
 
-julia> splitdims([1 2; 3 4]) # create nested arrays
-2-element Array{Array{Int64,1},1}:
- [1, 3]
- [2, 4]
+julia> splitdims([1 2 3; 4 5 6]) # create nested arrays
+3-element Array{Array{Int64,1},1}:
+ [1, 4]
+ [2, 5]
+ [3, 6]
 
-julia> combinedims([[1, 2], [3, 4]]) # flatten nested arrays
-2×2 Array{Int64,2}:
- 1  2
- 3  4
+julia> combinedims([[1, 2, 3], [4, 5, 6]]) # flatten nested arrays
+2×3 Array{Int64,2}:
+ 1  2  3
+ 4  5  6
+
+ julia> invert([[1,2,3],[4,5,6]]) # invert the order of nesting
+3-element Array{Array{Int64,1},1}:
+ [1, 4]
+ [2, 5]
+ [3, 6]
 
 julia> group(iseven, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) # split elements into groups
 Dict{Bool,Array{Int64,1}} with 2 entries:
@@ -160,6 +171,8 @@ Like `splitdimsview(array, dims)` except creating a lazy view of the nested stru
 The inverse operation of `splitdims` - this will take a nested array of arrays, where 
 each sub-array has the same dimensions, and combine them into a single, flattened array.
 
+#### Example:
+
 ```julia
 julia> combinedims([[1, 2], [3, 4]])
 2×2 Array{Int64,2}:
@@ -170,6 +183,25 @@ julia> combinedims([[1, 2], [3, 4]])
 ### `combinedimsview(array)`
 
 Like `combinedims(array)` except creating a lazy view of the flattened struture.
+
+### `invert(a)`
+
+Take a nested container `a` and return a container where the nesting is reversed, such that
+`invert(a)[i][j] === a[j][i]`.
+
+#### Example:
+
+```julia
+julia> invert([[1,2,3],[4,5,6]]) # invert the order of nesting
+3-element Array{Array{Int64,1},1}:
+ [1, 4]
+ [2, 5]
+ [3, 6]
+```
+
+### `invert!(out, a)`
+
+A mutating version of `invert`, which stores the result in `out`.
 
 ### `mapmany(f, iters...)`
 

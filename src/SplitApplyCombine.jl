@@ -40,8 +40,8 @@ export flatten #, flattenview
 export combinedims, combinedimsview, CombineDimsArray
 
 # collections of collections -> collections of collections
+export invert, invert! # a "transpose" for nested containers
 export innerjoin, ⨝, leftgroupjoin
-# `pivot` or similar - like transpose, but nested.
 
 include("single.jl")
 include("merge.jl")
@@ -51,6 +51,7 @@ include("innerjoin.jl")
 include("leftgroupjoin.jl")
 include("splitdims.jl")
 include("combinedims.jl")
+include("invert.jl")
 
 # Syntax
 include("underscore.jl")

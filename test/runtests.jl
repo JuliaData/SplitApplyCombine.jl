@@ -12,5 +12,6 @@ include("map.jl")
 include("group.jl")
 include("innerjoin.jl")
 include("leftgroupjoin.jl")
+include("invert.jl")
 
 include("underscore.jl")
