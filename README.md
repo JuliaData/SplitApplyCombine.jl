@@ -98,9 +98,9 @@ While simple, this already allows quite a bit of relational algebra to occur. On
 use `zip` and `product` iterables for more complex operations. The goal below will be to
 discuss functions which work well for general iterables *and* will be useful for a table
 that iterates rows. As a prototype to keep in mind for this work, I consider an 
-`AbstractVector{<:NamedTuple}` to be a good model of a table/dataframe. Specialized
-packages may provide convenient macro-based DSLs, a greater range of functions, and
-implementations that focus on things such as out-of-core or distributed computing, more
+`AbstractVector{<:NamedTuple}` to be a good model of (strongly-typed) a table/dataframe.
+Specialized packages may provide convenient macro-based DSLs, a greater range of functions,
+and implementations that focus on things such as out-of-core or distributed computing, more
 flexible acceleration indexing, etc. Here I'm only considering the basic, bare-bones API
 that may be extended and built upon by other packages.
 
@@ -380,14 +380,3 @@ Dict{Bool,Array{Tuple{Int64,Int64},1}} with 2 entries:
   false => Tuple{Int64,Int64}[(1, 1), (3, 1)]
   true  => Tuple{Int64,Int64}[(2, 0), (2, 2), (4, 0), (4, 2)]
 ```
-
-## Syntax and macros
-
-### `@_` macro
-
-This adds the ability for piping to use the `_` to create anonymous functions quickly and
-easily.
-
-#### Example:
-
-`@_ data |> reduce(+,_)` expands to `data |> x->reduce(+,x)`

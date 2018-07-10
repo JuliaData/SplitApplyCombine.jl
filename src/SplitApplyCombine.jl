@@ -21,9 +21,6 @@ else
     import Base: axes, ht_keyindex2!
 end
 
-# Syntax
-export @_
-
 # collections -> scalar
 export single
 
@@ -53,14 +50,9 @@ include("splitdims.jl")
 include("combinedims.jl")
 include("invert.jl")
 
-# Syntax
-include("underscore.jl")
-
-
 # Silly definitions missing from Base
 # ===================================
 # this should always work
 Base.haskey(a, i) = i ∈ keys(a) 
-
 
 end # module
