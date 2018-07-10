@@ -81,12 +81,12 @@ function _invert!(out, a, innerkeys, outerkeys)
 end
 
 # Tuple-tuple
-if VERSION < v"0.7-"
+@static if VERSION < v"0.7-"
     @generated function invert(a::NTuple{n, NTuple{m, Any}}) where {n, m}
         exprs = [:(tuple($([:(a[$j][$i]) for j = 1:n]...))) for i = 1:m]
         return quote
             Base.@_inline_meta
-            return :(tuple($(exprs...)))
+            return tuple($(exprs...))
         end
     end
 else

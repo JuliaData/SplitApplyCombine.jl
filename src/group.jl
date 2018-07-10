@@ -148,6 +148,40 @@ if VERSION < v"0.7-"
     """
     function groupreduce(by, op, f, iter; kw...)
         # TODO Do this inference-free, like comprehensions...
+        T = eltype(iter)
+        K = promote_op(by, T)
+        T2 = promote_op(f, T)
+        V = promote_op(op, T2, T2)
+
+        out = Dict{K, V}()
+        for x ∈ iter
+            key = by(x)
+            dict_index = ht_keyindex2!(out, key)
+            if dict_index > 0
+                @inbounds out.vals[dict_index] = op(out.vals[dict_index], f(x))
+            else
+                if length(kw) == 0
+                    Base._setindex!(out, convert(V, f(x)), key, -dict_index)
+                elseif length(kw) == 1 && kw[1][1]== :init
+                    Base._setindex!(out, convert(V, op(kw[1][2], f(x))), key, -dict_index)
+                else
+                    throw(ArgumentError("groupreduce doesn't support the keyword arguments $(setdiff(first.(kw), [:init,]))"))
+                end
+            end
+        end
+        return out
+    end
+else
+    """
+        groupreduce(by, op, f, iter...; [init])
+
+    Applies a `mapreduce`-like operation on the groupings labeled by passing the elements of
+    `iter` through `by`. Mostly equivalent to `map(g -> reduce(op, v0, g), group(by, f, iter))`,
+    but designed to be more efficient. If multiple collections (of the same length) are
+    provided, the transformations `by` and `f` occur elementwise.
+    """
+    function groupreduce(by, op, f, iter; kw...)
+        # TODO Do this inference-free, like comprehensions...
         nt = kw.data
         T = eltype(iter)
         K = promote_op(by, T)
@@ -167,38 +201,6 @@ if VERSION < v"0.7-"
                     Base._setindex!(out, convert(V, op(nt.init, f(x))), key, -dict_index)
                 else
                     throw(ArgumentError("groupreduce doesn't support the keyword arguments $(setdiff(keys(nt), (:init,)))"))
-                end
-            end
-        end
-        return out
-    end
-else
-    """
-        groupreduce(by, op, f, iter...; [init])
-
-    Applies a `mapreduce`-like operation on the groupings labeled by passing the elements of
-    `iter` through `by`. Mostly equivalent to `map(g -> reduce(op, v0, g), group(by, f, iter))`,
-    but designed to be more efficient. If multiple collections (of the same length) are
-    provided, the transformations `by` and `f` occur elementwise.
-    """
-    function groupreduce(by, op, f, iter; kw...)
-        # TODO Do this inference-free, like comprehensions...
-        T = eltype(iter)
-        K = promote_op(by, T)
-        T2 = promote_op(f, T)
-        V = promote_op(op, T2, T2)
-
-        out = Dict{K, V}()
-        for x ∈ iter
-            key = by(x)
-            dict_index = ht_keyindex2!(out, key)
-            if dict_index > 0
-                @inbounds out.vals[dict_index] = op(out.vals[dict_index], f(x))
-            else
-                if haskey(kw, :init)
-                    Base._setindex!(out, convert(V, op(kw[:init], f(x))), key, -dict_index)
-                else
-                    Base._setindex!(out, convert(V, f(x)), key, -dict_index)
                 end
             end
         end
