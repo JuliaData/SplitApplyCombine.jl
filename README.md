@@ -107,7 +107,7 @@ that may be extended and built upon by other packages.
 ## Notes
 
 This package is nascent and many of the APIs here should be considered "under development"
-for the time being. Many of the functions so far are inspired by other systems, notably
+for the time being. Many of the functions so far are inspired by other systems, such as
 LINQ. The package current supports Julia v0.6 and v0.7/v1.0. Contributions and ideas very
 welcome.
 
@@ -186,6 +186,8 @@ Like `combinedims(array)` except creating a lazy view of the flattened struture.
 
 ### `invert(a)`
 
+WARNING: This is a work-in-progress and does not yet work with many container types.
+
 Take a nested container `a` and return a container where the nesting is reversed, such that
 `invert(a)[i][j] === a[j][i]`.
 
@@ -200,6 +202,8 @@ julia> invert([[1,2,3],[4,5,6]]) # invert the order of nesting
 ```
 
 ### `invert!(out, a)`
+
+WARNING: This is a work-in-progress and does not yet work with many container types.
 
 A mutating version of `invert`, which stores the result in `out`.
 
@@ -319,10 +323,10 @@ julia> v
   8
 ```
 
-### `groupreduce(by, [f = identity], op, [v0], iter...)`
+### `groupreduce(by, op, [f = identity], iter...; [init])`
 
 Applies a `mapreduce`-like operation on the groupings labeled by passing the elements of
-`iter` through `by`. Mostly equivalent to `map(g -> reduce(op, v0, g), group(by, f, iter))`,
+`iter` through `by`. Mostly equivalent to `map(g -> reduce(op, g; init=init), group(by, f, iter))`,
 but designed to be more efficient. If multiple collections (of the same length) are
 provided, the transformations `by` and `f` occur elementwise.
 
@@ -338,8 +342,7 @@ Dict{Bool,Int64} with 2 entries:
 
 ### `innerjoin([lkey = identity], [rkey = identity], [f = tuple], [comparison = isequal], left, right)`
 
-*Note*: it might be more natural to call this function `join`, except it clashes with the
-existing `Base.join` string operation.
+WARNING: This API is a work-in-progress and may change in the future.
 
 Performs a relational-style join operation between iterables `left` and `right`, returning
 a collection of elements `f(l, r)` for which `comparison(lkey(l), rkey(r))` is `true` where
@@ -359,6 +362,8 @@ julia> innerjoin(iseven, iseven, tuple, ==, [1,2,3,4], [0,1,2])
 ```
 
 ### `leftgroupjoin([lkey = identity], [rkey = identity], [f = tuple], [comparison = isequal], left, right)`
+
+WARNING: This API is a work-in-progress and may change in the future.
 
 Creates a collection if groups labelled by `lkey(l)` where each group contains elements
 `f(l, r)` which satisfy `comparison(lkey(l), rkey(r))`. If there rae no matches, the group

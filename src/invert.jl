@@ -100,6 +100,7 @@ else
     end
 end
 
+#=
 # Tuple-Array
 @inline function invert(a::NTuple{n, AbstractArray}) where {n}
     arraysize = keys(a[1])
@@ -123,6 +124,7 @@ end
     # TODO fix inference issues.
     ntuple(i -> [a[j][i] for j = arraysize], Val(n))
 end
+=#
 
 # NamedTuple-NamedTuple
 
