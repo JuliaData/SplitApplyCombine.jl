@@ -31,16 +31,9 @@ julia> invert([[1,2,3],[4,5,6]])
         end
     end
 
-    @static if VERSION < v"0.7-"
-        out = Array{Array{eltype(T),length(outersize)}}(outersize)
-        @inbounds for i in outerkeys
-            out[i] = Array{eltype(T)}(innersize)
-        end
-    else
-        out = Array{Array{eltype(T),length(outersize)}}(undef, outersize)
-        @inbounds for i in outerkeys
-            out[i] = Array{eltype(T)}(undef, innersize)
-        end
+    out = Array{Array{eltype(T),length(outersize)}}(undef, outersize)
+    @inbounds for i in outerkeys
+        out[i] = Array{eltype(T)}(undef, innersize)
     end
 
     return _invert!(out, a, innerkeys, outerkeys)
@@ -81,22 +74,12 @@ function _invert!(out, a, innerkeys, outerkeys)
 end
 
 # Tuple-tuple
-@static if VERSION < v"0.7-"
-    @generated function invert(a::NTuple{n, NTuple{m, Any}}) where {n, m}
+@inline function invert(a::NTuple{n, NTuple{m, Any}}) where {n, m}
+    if @generated
         exprs = [:(tuple($([:(a[$j][$i]) for j = 1:n]...))) for i = 1:m]
-        return quote
-            Base.@_inline_meta
-            return tuple($(exprs...))
-        end
-    end
-else
-    @inline function invert(a::NTuple{n, NTuple{m, Any}}) where {n, m}
-        if @generated
-            exprs = [:(tuple($([:(a[$j][$i]) for j = 1:n]...))) for i = 1:m]
-            return :(tuple($(exprs...)))
-        else
-            ntuple(i -> ntuple(j -> a[j][i], Val(n)), Val(m))
-        end
+        return :(tuple($(exprs...)))
+    else
+        ntuple(i -> ntuple(j -> a[j][i], Val(n)), Val(m))
     end
 end
 

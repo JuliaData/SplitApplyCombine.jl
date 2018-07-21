@@ -72,32 +72,17 @@ end
     return nothing
 end
 
-@static if VERSION < v"0.7-"
-    @generated function slice_inds(i::CartesianIndex, ::Val{dims}, ::Val{n}) where {dims, n}
-        out = []
-        for j in 1:n
-            k = findfirst(dims .== j)
-            if k === 0
-                out = [out..., :]
-            else
-                out = [out..., :(i[$k])]
-            end
+@generated function slice_inds(i::CartesianIndex, ::Val{dims}, ::Val{n}) where {dims, n}
+    out = []
+    for j in 1:n
+        k = findfirst(==(j), dims)
+        if k === nothing
+            out = [out..., :]
+        else
+            out = [out..., :(i[$k])]
         end
-        return :(tuple($(out...)))
     end
-else
-    @generated function slice_inds(i::CartesianIndex, ::Val{dims}, ::Val{n}) where {dims, n}
-        out = []
-        for j in 1:n
-            k = findfirst(==(j), dims)
-            if k === nothing
-                out = [out..., :]
-            else
-                out = [out..., :(i[$k])]
-            end
-        end
-        return :(tuple($(out...)))
-    end
+    return :(tuple($(out...)))
 end
 
 ## Lazy version
@@ -109,6 +94,7 @@ end
 Base.parent(a::SplitDimsArray) = a.parent
 
 axes(a::SplitDimsArray{T, N, Dims}) where {T, N, Dims} = getindices(axes(parent(a)), Dims)
+size(a::SplitDimsArray{T, N, Dims}) where {T, N, Dims} = getindices(size(parent(a)), Dims)
 Base.IndexStyle(::SplitDimsArray) = Base.IndexCartesian()
 @propagate_inbounds function Base.getindex(a::SplitDimsArray{T, N, Dims}, i::Int...) where {T, N, Dims}
     return view(parent(a), slice_inds(CartesianIndex(i), Val(Dims), Val(ndims(parent(a))))...)
@@ -147,14 +133,8 @@ end
 
 @pure _subtract(N::Int, M::Int) = N - M
 
-@static if VERSION < v"0.7-"
-    function new_eltype(::Type{A}, ::Val{Dims}) where {A, Dims}
-        return Core.Inference.return_type(view, splat_inds(Tuple{A, Core.Inference.return_type(slice_inds, Tuple{CartesianIndex{length(Dims)}, Val{Dims}, Val{ndims(A)}})}))
-    end
-else
-    function new_eltype(::Type{A}, ::Val{Dims}) where {A, Dims}
-        return Core.Compiler.return_type(view, splat_inds(Tuple{A, Core.Compiler.return_type(slice_inds, Tuple{CartesianIndex{length(Dims)}, Val{Dims}, Val{ndims(A)}})}))
-    end
+function new_eltype(::Type{A}, ::Val{Dims}) where {A, Dims}
+    return Core.Compiler.return_type(view, splat_inds(Tuple{A, Core.Compiler.return_type(slice_inds, Tuple{CartesianIndex{length(Dims)}, Val{Dims}, Val{ndims(A)}})}))
 end
 
 @pure function splat_inds(::Type{T}) where {T <: Tuple}

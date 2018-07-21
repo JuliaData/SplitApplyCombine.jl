@@ -3,30 +3,12 @@ module SplitApplyCombine
 using Base: @propagate_inbounds, @pure, promote_op
 using Indexing
 
-# mini-compat (more for my knowledge than anything)
-@static if VERSION < v"0.7-"
-    const AbstractDict = Associative
-    const axes = indices
-    const ht_keyindex2! = Base.ht_keyindex2
-    const CartesianIndices = CartesianRange
-
-    Base.keys(v::AbstractVector) = indices(v)[1]
-    Base.keys(a::AbstractArray) = CartesianRange(indices(a)...)
-    Base.keys(::NTuple{N,Any}) where {N} = Base.OneTo(N)
-    Base.keys(::Number) = Base.OneTo(1)
-
-    @pure Base.Val(x) = Val{x}()
-    @inline Base.ntuple(f, ::Val{x}) where {x} = ntuple(f, Val{x})
-else
-    import Base: axes, ht_keyindex2!
-end
-
 # collections -> scalar
 export single
 
 # collections -> collections
-import Base: merge, merge!
-export mapmany
+import Base: merge, merge!, size, IndexStyle, getindex, parent, axes, ht_keyindex2!, iterate
+export mapmany, mapview, MappedIterator, MappedArray
 
 # collections -> collections of collections
 export group, groupinds, Groups, groupview, groupreduce

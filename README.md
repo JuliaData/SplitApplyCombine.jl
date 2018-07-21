@@ -207,6 +207,34 @@ WARNING: This is a work-in-progress and does not yet work with many container ty
 
 A mutating version of `invert`, which stores the result in `out`.
 
+### `mapview(f, iter)`
+
+Like `map`, but presents a view of the data contained in `iter`. The result may be wrapped in an
+lazily-computed output container (generally attempting to preserve arrays as `AbstractArray`, and
+so-on).
+
+For immutable collections (like `Tuple` and `NamedTuple`), the operation may be performed eagerly.
+
+#### Example:
+
+```julia
+julia> a = [1,2,3];
+
+julia> b = mapview(iseven, a)
+3-element MappedArray{Bool,1,typeof(iseven),Array{Int64,1}}:
+ false
+  true
+ false
+
+julia> a[1] = 2;
+
+julia> b
+3-element MappedArray{Bool,1,typeof(iseven),Array{Int64,1}}:
+  true
+  true
+ false
+```
+
 ### `mapmany(f, iters...)`
 
 Like `map`, but `f(x...)` for each `x ∈ zip(iters...)` may return an arbitrary number of 
