@@ -61,7 +61,14 @@ end
 	x = iterate(it.parent, i)
 	return x === nothing ? nothing : (it.f(x[1]), x[2])
 end
-# TODO HasLength, HasShape, etc...
+
+# Inherit any iteration and indexing properties from parent
+Base.IteratorSize(it::MappedIterator) = Base.IteratorSize(it.parent)
+Base.length(it::MappedIterator) = length(it.parent)
+Base.size(it::MappedIterator) = size(it.parent)
+Base.axes(it::MappedIterator) = axes(it.parent)
+Base.keys(it::MappedIterator) = keys(it.parent)
+@propagate_inbounds Base.getindex(it::MappedIterator, i) = it.parent[i]
 
 struct MappedArray{T, N, F, A <: AbstractArray{<:Any, N}} <: AbstractArray{T, N}
 	f::F
@@ -77,14 +84,31 @@ IndexStyle(a::MappedArray) = IndexStyle(a.parent)
 """
     mapview(f, a)
 
-Return a container equivalent to `map(f, a)`.
+Return a view of `a` where each element is mapped through function `f`. The iteration and
+indexing properties of `a` are preserved. Similar to `map(f, a)`, except evaluated lazily.
+
+# Example
+
+```julia
+julia> a = [1,2,3];
+
+julia> b = mapview(-, a)
+3-element MappedArray{Int64,1,typeof(-),Array{Int64,1}}:
+ -1
+ -2
+ -3
+
+julia> a[1] = 10;
+
+julia> b
+3-element MappedArray{Int64,1,typeof(-),Array{Int64,1}}:
+ -10
+  -2
+  -3
+```
 """
 mapview(f, a) = MappedIterator(f, a)
 mapview(f, a::AbstractArray{T, N}) where {T, N} = MappedArray{promote_op(f, T), N, typeof(f), typeof(a)}(f, a)
-mapview(f, a::Tuple) = map(f, a)
-mapview(f, a::NamedTuple) = map(f, a)
 
 mapview(::typeof(identity), a) = a
 mapview(::typeof(identity), a::AbstractArray) = a
-mapview(::typeof(identity), a::Tuple) = a
-mapview(::typeof(identity), a::NamedTuple) = a

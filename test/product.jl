@@ -15,7 +15,7 @@ end
 @testset "productview" begin
     @test @inferred(productview(*, [1,2], [1,2,3]))::ProductArray{Int,2} == [1 2 3; 2 4 6]
     @test @inferred(productview(*, [1.0,2.0], [1,2,3]))::ProductArray{Float64,2} == [1.0 2.0 3.0; 2.0 4.0 6.0]
-    @test isequal(productview(*, [1.0,2.0], [1,2,missing]), [1.0 2.0 missing; 2.0 4.0 missing])
+    @test isequal(productview(*, [1.0,2.0], [1,2,missing])::ProductArray, [1.0 2.0 missing; 2.0 4.0 missing])
     @test_broken isequal(@inferred(productview(*, [1.0,2.0], [1,2,missing]))::ProductArray{Union{Missing, Float64},2}, [1.0 2.0 missing; 2.0 4.0 missing])
 
     @test @inferred(productview(+, fill(1), fill(1)))::ProductArray{Int, 0} == fill(2)
