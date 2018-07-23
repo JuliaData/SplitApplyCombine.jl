@@ -273,6 +273,39 @@ julia> flatten([1:1, 1:2, 1:3])
  3
 ```
 
+### `product(f, a, b)`
+
+Takes the Cartesian outer product of two containers and evaluates `f` on all pairings of
+elements.
+
+For example, if `a` and `b` are vectors, this returns a matrix `out` such that
+`out[i,j] = f(a[i], b[j])` for `i in keys(a)` and `j in keys(b)`.
+
+Note this interface differs slightly from `Iterators.product` where `f = tuple` is assumed.
+
+#### Example:
+
+```julia
+julia> product(+, [1,2], [1,2,3])
+2×3 Array{Int64,2}:
+ 2  3  4
+ 3  4  5
+```
+
+### `productview(f, a, b)`
+
+Like `product`, but return a view of the Cartesian product of `a` and `b` where the output elements are `f`
+evaluated with the corresponding of `a` and `b`.
+
+# Example
+
+```julia
+julia> productview(+, [1,2], [1,2,3])
+2×3 ProductArray{Int64,2,typeof(+),Array{Int64,1},Array{Int64,1}}:
+ 2  3  4
+ 3  4  5
+```
+
 ## Grouping
 
 These operations help you split the elements of a collection according to an arbitrary

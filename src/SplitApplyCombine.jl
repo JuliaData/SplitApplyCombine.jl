@@ -3,12 +3,13 @@ module SplitApplyCombine
 using Base: @propagate_inbounds, @pure, promote_op
 using Indexing
 
+import Base: merge, merge!, size, IndexStyle, getindex, parent, axes, ht_keyindex2!, iterate
+
 # collections -> scalar
 export single
 
 # collections -> collections
-import Base: merge, merge!, size, IndexStyle, getindex, parent, axes, ht_keyindex2!, iterate
-export mapmany, mapview, MappedIterator, MappedArray
+export mapmany, mapview, MappedIterator, MappedArray, product, productview, ProductArray
 
 # collections -> collections of collections
 export group, groupinds, Groups, groupview, groupreduce
@@ -26,6 +27,7 @@ include("single.jl")
 include("merge.jl")
 include("map.jl")
 include("group.jl")
+include("product.jl")
 include("innerjoin.jl")
 include("leftgroupjoin.jl")
 include("splitdims.jl")
