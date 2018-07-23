@@ -273,31 +273,6 @@ julia> flatten([1:1, 1:2, 1:3])
  3
 ```
 
-### `mapview(f, a)`
-
-Return a view of `a` where each element is mapped through function `f`. Similar to
-`map(f, a)` except evaluated lazily.
-
-#### Example:
-
-```julia
-julia> a = [1,2,3];
-
-julia> b = mapview(-, a)
-3-element MappedArray{Int64,1,typeof(-),Array{Int64,1}}:
- -1
- -2
- -3
-
-julia> a[1] = 10;
-
-julia> b
-3-element MappedArray{Int64,1,typeof(-),Array{Int64,1}}:
- -10
-  -2
-  -3
-```
-
 ### `product(f, a, b)`
 
 Takes the Cartesian outer product of two containers and evaluates `f` on all pairings of
@@ -322,7 +297,7 @@ julia> product(+, [1,2], [1,2,3])
 Like `product`, but return a view of the Cartesian product of `a` and `b` where the output elements are `f`
 evaluated with the corresponding of `a` and `b`.
 
-# Example
+#### Example
 
 ```julia
 julia> productview(+, [1,2], [1,2,3])
