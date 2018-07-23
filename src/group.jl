@@ -63,15 +63,17 @@ Dict{Bool,Array{Int64,1}} with 2 entries:
 ```
 """
 function groupinds(by, iter)
+    _groupinds(mapview(by, iter))
+end
+
+function _groupinds(iter)
     T = eltype(iter)
-    K = promote_op(by, T)
     inds = keys(iter)
     V = eltype(inds)
 
-    out = Dict{K, Vector{V}}()
+    out = Dict{T, Vector{V}}()
     for i ∈ inds
-        @inbounds x = iter[i]
-        key = by(x)
+        @inbounds key = iter[i]
         push!(get!(()->Vector{V}(), out, key), i)
     end
     return out
