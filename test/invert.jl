@@ -15,4 +15,20 @@
     at = [(1, 3.1), (2, 4.1)]
     @test @inferred(invert(ta))::Vector{Tuple{Int, Float64}} == at
     @test @inferred(invert(at))::Tuple{Vector{Int}, Vector{Float64}} == ta
+
+    # named tuples
+    nn = (a = (x = true, y = 2), b = (x = 3.0, y = 4.0f0))
+    @test @inferred(invert(nn)) === (x = (a = true, b = 3.0), y = (a = 2, b = 4.0f0))
+
+    # tuples / named tuples
+    tn = ((a = true, b = 2), (a = 3.0, b = 4.0f0))
+    nt = (a = (true, 3.0), b = (2, 4.0f0))
+    @test @inferred(invert(nt)) === tn
+    @test @inferred(invert(tn)) === nt
+
+    # arrays / named tuples
+    na = (a = [1,2,3], b = [2.0, 4.0, 6.0])
+    an = [(a = 1, b = 2.0), (a = 2, b = 4.0), (a = 3, b = 6.0)]
+    @test @inferred(invert(na))::typeof(an) == an
+    @test @inferred(invert(an))::typeof(na) == na
 end
