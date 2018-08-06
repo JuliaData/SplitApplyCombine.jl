@@ -46,6 +46,20 @@ end
 
 group(by, f, iter1, iter2, iters...) = group((x -> by(x...)), (x -> f(x...)), zip(iter1, iter2, iters...))
 
+# For arrays we follow a different algorithm
+group(by, f, a::AbstractArray) = group2(mapview(by, a), mapview(f, a))
+
+function group2(groups, values)
+    # TODO: assert that keys(groups) match up to keys(values)
+    V = eltype(values)
+    out = Dict{eltype(groups), Vector{V}}()
+    @inbounds for i ∈ keys(groups)
+        group = groups[i]
+        value = values[i]
+        push!(get!(()->Vector{V}(), out, group), value)
+    end
+    return out
+end
 
 """
     groupinds(by, iter...)
