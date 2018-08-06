@@ -131,8 +131,6 @@ julia> splitdims([1 2; 3 4], 1)
     SplitDimsArray{new_eltype(typeof(a), Val(dims)), M, dims, typeof(a)}(a)
 end
 
-@pure _subtract(N::Int, M::Int) = N - M
-
 function new_eltype(::Type{A}, ::Val{Dims}) where {A, Dims}
     return Core.Compiler.return_type(view, splat_inds(Tuple{A, Core.Compiler.return_type(slice_inds, Tuple{CartesianIndex{length(Dims)}, Val{Dims}, Val{ndims(A)}})}))
 end

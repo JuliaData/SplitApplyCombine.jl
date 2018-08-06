@@ -74,6 +74,6 @@ julia> productview(+, [1,2], [1,2,3])
 """
 function productview(f, a, b)
 	T = promote_op(f, eltype(a), eltype(b))
-	N = _add(ndims(a), ndims(b))
+	N = ndims(a) + ndims(b)
 	return ProductArray{T, N, typeof(f), typeof(a), typeof(b)}(f, a, b)
 end

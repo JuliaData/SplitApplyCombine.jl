@@ -49,7 +49,7 @@ julia> splitdims([1 2 3; 4 5 6]) # create nested arrays
  [2, 5]
  [3, 6]
 
-julia> combinedims([[1, 2, 3], [4, 5, 6]]) # flatten nested arrays
+julia> combinedims([[1, 4], [2, 5], [3, 6]]) # flatten nested arrays
 2×3 Array{Int64,2}:
  1  2  3
  4  5  6
@@ -176,8 +176,8 @@ each sub-array has the same dimensions, and combine them into a single, flattene
 ```julia
 julia> combinedims([[1, 2], [3, 4]])
 2×2 Array{Int64,2}:
- 1  2
- 3  4
+ 1  3
+ 2  4
 ```
 
 ### `combinedimsview(array)`
