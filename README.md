@@ -186,12 +186,13 @@ Like `combinedims(array)` except creating a lazy view of the flattened struture.
 
 ### `invert(a)`
 
-WARNING: This is a work-in-progress and does not yet work with many container types.
-
 Take a nested container `a` and return a container where the nesting is reversed, such that
 `invert(a)[i][j] === a[j][i]`.
 
-#### Example:
+Currently implemented for combinations of `AbstractArray`, `Tuple` and `NamedTuple`. It is
+planned to add `AbstractDict` in the future.
+
+#### Examples:
 
 ```julia
 julia> invert([[1,2,3],[4,5,6]]) # invert the order of nesting
@@ -199,11 +200,15 @@ julia> invert([[1,2,3],[4,5,6]]) # invert the order of nesting
  [1, 4]
  [2, 5]
  [3, 6]
+
+julia> invert((a = [1, 2, 3], b = [2.0, 4.0, 6.0])) # Works between different data types
+3-element Array{NamedTuple{(:a, :b),Tuple{Int64,Float64}},1}:
+ (a = 1, b = 2.0)
+ (a = 2, b = 4.0)
+ (a = 3, b = 6.0)
 ```
 
 ### `invert!(out, a)`
-
-WARNING: This is a work-in-progress and does not yet work with many container types.
 
 A mutating version of `invert`, which stores the result in `out`.
 
@@ -328,10 +333,21 @@ Dict{Bool,Array{Int64,1}} with 2 entries:
   false => [1, 3, 5, 7, 9]
   true  => [2, 4, 6, 8, 10]
 
-julia> group(iseven, x -> x ÷ 2, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-Dict{Bool,Array{Int64,1}} with 2 entries:
-  false => [0, 1, 2, 3, 4]
-  true  => [1, 2, 3, 4, 5]
+julia> names = ["Andrew Smith", "John Smith", "Alice Baker", "Robert Baker",
+                "Jane Smith", "Jason Bourne"]
+6-element Array{String,1}:
+ "Andrew Smith"
+ "John Smith"
+ "Alice Baker"
+ "Robert Baker"
+ "Jane Smith"
+ "Jason Bourne"
+
+julia> group(last, first, split.(names))
+Dict{SubString{String},Array{SubString{String},1}} with 3 entries:
+  "Bourne" => SubString{String}["Jason"]
+  "Baker"  => SubString{String}["Alice", "Robert"]
+  "Smith"  => SubString{String}["Andrew", "John", "Jane"]
 ```
 
 ### `groupinds(by, iter)`
@@ -391,13 +407,22 @@ Applies a `mapreduce`-like operation on the groupings labeled by passing the ele
 but designed to be more efficient. If multiple collections (of the same length) are
 provided, the transformations `by` and `f` occur elementwise.
 
-#### Example:
+We also export `grouplength`, `groupsum` and `groupprod` as special cases of the above, to determine
+the number of elements per group, their sum, and their product, respectively.
+
+#### Examples:
 ```julia
 julia> groupreduce(iseven, +, 1:10)
 Dict{Bool,Int64} with 2 entries:
   false => 25
   true  => 30
+
+julia> grouplength(iseven, 1:10)
+Dict{Bool,Int64} with 2 entries:
+  false => 5
+  true  => 5
 ```
+
 
 ## Joining
 

@@ -193,3 +193,28 @@ true  => 30
 ```
 """
 groupreduce(by, op, iter; kw...) = groupreduce(by, op, identity, iter; kw...)
+
+# Special group operators
+
+"""
+    grouplength(by, iter)
+
+Determine the number of elements of `iter` belonging to each group.
+"""
+grouplength(by, iter) = groupreduce(by, +, x->1, iter)
+
+"""
+    groupsum(by, [f], iter)
+
+Sum the elements of `iter` belonging to different groups, optionally mapping by `f`.
+"""
+groupsum(by, iter) = groupreduce(by, +, identity, iter)
+groupsum(by, f, iter) = groupreduce(by, +, f, iter)
+
+"""
+    groupprod(by, [f], iter)
+
+Multiply the elements of `iter` belonging to different groups, optionally mapping by `f`.
+"""
+groupprod(by, iter) = groupreduce(by, *, identity, iter)
+groupprod(by, f, iter) = groupreduce(by, *, f, iter)

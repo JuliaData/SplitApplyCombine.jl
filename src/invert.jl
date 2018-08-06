@@ -8,7 +8,7 @@ example turning a dictionary of arrays into an array of dictionaries, such that
 Note that in order for the keys of the inner and outer structure to be known, the input
 container `a` must not be empty. 
 
-# Example
+# Examples
 
 ```julia
 julia> invert([[1,2,3],[4,5,6]])
@@ -16,6 +16,12 @@ julia> invert([[1,2,3],[4,5,6]])
  [1, 4]
  [2, 5]
  [3, 6]
+
+julia> invert((a = [1, 2, 3], b = [2.0, 4.0, 6.0]))
+3-element Array{NamedTuple{(:a, :b),Tuple{Int64,Float64}},1}:
+ (a = 1, b = 2.0)
+ (a = 2, b = 4.0)
+ (a = 3, b = 6.0)
 ```
 """ # Array-Array
 @inline function invert(a::AbstractArray{T}) where {T <: AbstractArray}
