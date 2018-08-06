@@ -1,10 +1,10 @@
 function single(iter)
-    i = start(iter)
-    if done(iter, i)
+    i = iterate(iter)
+    if i === nothing
         throw(ArgumentError("Collection must have exactly one element (input is empty)"))
     end
-    (out, i) = next(iter, i)
-    if done(iter, i)
+    (out, state) = i
+    if iterate(iter, state) === nothing
         return out
     else
         throw(ArgumentError("Collection must have exactly one element (input contains more than one element)"))

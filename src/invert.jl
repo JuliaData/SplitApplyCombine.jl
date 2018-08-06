@@ -83,31 +83,59 @@ end
     end
 end
 
-#=
+
 # Tuple-Array
 @inline function invert(a::NTuple{n, AbstractArray}) where {n}
-    arraysize = keys(a[1])
+    arrayinds = keys(a[1])
 
     @boundscheck for x in a
-        if keys(x) != arraysize
-            error("keys don't match")
+        if keys(x) != arrayinds
+            error("indices are not uniform")
         end
     end
     
-    # TODO: Construct empty array and call invert! Fix inference issues.
-    [ntuple(i -> a[i][j], Val(n)) for j = arraysize]
+    T = _eltypes(typeof(a))
+    out = similar(first(a), T)
+
+    @inbounds invert!(out, a)
 end
 
-# TODO: invert!
+@inline function invert!(out::AbstractArray{<:NTuple{n, Any}}, a::NTuple{n, AbstractArray}) where n
+    @boundscheck for x in a
+        if keys(x) != keys(out)
+            error("indices do not match")
+        end
+    end
+
+    @inbounds for i in keys(out)
+        out[i] = map(x -> @inbounds(x[i]), a)
+    end
+
+    return out
+end
+
+# Note that T is a concrete type, so the AbstractArrays should have all their type parameters
+@pure function _eltypes(::Type{T}) where {T <: Tuple{Vararg{AbstractArray}}}
+    types = T.parameters
+    eltypes = map(eltype, types)
+    return Tuple{eltypes...}
+end
+
+struct Indexer{i}
+end
+
+Indexer(i::Int) = Indexer{i}()
+(::Indexer{i})(x) where {i} = @inbounds x[i]
 
 # Array-Tuple
 @inline function invert(a::AbstractArray{<:NTuple{n, Any}}) where {n}
-    arraysize = keys(a[1])
-    
-    # TODO fix inference issues.
-    ntuple(i -> [a[j][i] for j = arraysize], Val(n))
+    if @generated
+        exprs = [ :(map($(Indexer(i)), a)) for i in 1:n ]
+        return :( tuple($(exprs...)) )
+    else    
+        ntuple(i -> map(x -> x[i], a), Val(n))
+    end
 end
-=#
 
 # NamedTuple-NamedTuple
 

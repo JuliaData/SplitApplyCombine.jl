@@ -88,12 +88,16 @@ Base.@propagate_inbounds function Base.getindex(g::Groups, k)
     return view(g.parent, inds)
 end
 Base.length(g::Groups) = length(keys(g))
-Base.start(g::Groups) = start(g.inds)
-function Base.next(g::Groups, i)
-    ((key, inds), i2) = next(g.inds, i)
-    return (key => g.parent[inds], i2)
+
+function Base.iterate(g::Groups, state...)
+    i = iterate(g.inds, state...)
+    if i === nothing
+        return nothing
+    else
+        ((key, inds), newstate) = i
+        return (key => @inbounds(g.parent[inds]), newstate)
+    end
 end
-Base.done(g::Groups, i) = done(g.inds, i)
 
 
 """
