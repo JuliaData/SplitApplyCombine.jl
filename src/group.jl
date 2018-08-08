@@ -39,7 +39,7 @@ function group(by, f, iter)
     out = Dict{K, Vector{V}}()
     for x ∈ iter
         key = by(x)
-        push!(get!(()->Vector{V}(), out, key), f(x))
+        push!(get!(Vector{V}, out, key), f(x))
     end
     return out
 end
@@ -56,7 +56,7 @@ function group2(groups, values)
     @inbounds for i ∈ keys(groups)
         group = groups[i]
         value = values[i]
-        push!(get!(()->Vector{V}(), out, group), value)
+        push!(get!(Vector{V}, out, group), value)
     end
     return out
 end
@@ -86,11 +86,29 @@ function groupinds(by, iter)
     for i ∈ inds
         @inbounds x = iter[i]
         key = by(x)
-        push!(get!(()->Vector{V}(), out, key), i)
+        push!(get!(Vector{V}, out, key), i)
     end
     return out
 end
 
+function groupinds(by, a::AbstractArray)
+    _groupinds(mapview(by, a))
+end
+
+function _groupinds(a::AbstractArray)
+    K = eltype(a)
+    inds = keys(a)
+    V = eltype(inds)
+
+    out = Dict{K, Vector{V}}()
+    @inbounds for i ∈ inds
+        x = a[i]
+        push!(get!(Vector{V}, out, x), i)
+    end
+    return out
+end
+
+# Semi-lazy grouping container
 struct Groups{K, V, T, Inds} <: AbstractDict{K, V}
     parent::T
     inds::Inds
