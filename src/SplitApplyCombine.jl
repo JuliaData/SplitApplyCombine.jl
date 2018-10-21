@@ -24,7 +24,6 @@ export invert, invert! # a "transpose" for nested containers
 export innerjoin, ⨝, leftgroupjoin
 
 include("single.jl")
-include("merge.jl")
 include("map.jl")
 include("group.jl")
 include("product.jl")

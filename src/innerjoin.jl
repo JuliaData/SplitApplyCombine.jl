@@ -1,24 +1,9 @@
 # Join works on collections of collections (e.g. a table is a collection of
 # rows).
 
-# This seems to be a generically useful primitive on indexable collections,
-# and is a useful definition for "natural" joins
-function overlaps(a, b)
-    for i in keys(a)
-        if haskey(b, i)
-            if a[i] != b[i]
-                return false
-            end
-        end
-    end
-    return true
-end
-
-# TODO simplified signatures
-
 innerjoin(left, right) = innerjoin(identity, identity, left, right)
 innerjoin(lkey, rkey, left, right) = innerjoin(lkey, rkey, merge, left, right)
-innerjoin(lkey, rkey, f, left, right) = innerjoin(lkey, rkey, f, overlaps, left, right)
+innerjoin(lkey, rkey, f, left, right) = innerjoin(lkey, rkey, f, isequal, left, right)
 
 const ⨝ = innerjoin
 
@@ -43,11 +28,16 @@ julia> innerjoin(iseven, iseven, tuple, ==, [1,2,3,4], [0,1,2])
 ```
 """
 function innerjoin(lkey, rkey, f, comparison, left, right)
-    # The O(length(left)*length(right)) generic method when nothing about `comparison` is known
-
     # TODO Do this inference-free, like comprehensions...
     T = promote_op(f, eltype(left), eltype(right))
-    out = T[]
+    out = empty(left, T)
+
+    innerjoin!(out, lkey, rkey, f, comparison, left, right)
+    return out
+end
+
+function innerjoin!(out, lkey, rkey, f, comparison, left, right)
+    # The O(length(left)*length(right)) generic method when nothing about `comparison` is known
     for a ∈ left
         for b ∈ right
             if comparison(lkey(a), rkey(b))
@@ -58,11 +48,9 @@ function innerjoin(lkey, rkey, f, comparison, left, right)
     return out
 end
 
-function innerjoin(lkey, rkey, f, ::typeof(isequal), left, right)
+function innerjoin!(out, lkey, rkey, f, ::typeof(isequal), left, right)
     # isequal heralds a hash-based approach, roughly O(length(left) * log(length(right)))
 
-    # TODO Do this inference-free, like comprehensions...
-    T = promote_op(f, eltype(left), eltype(right))
     K = promote_op(rkey, eltype(right))
     V = eltype(right)
     dict = Dict{K,Vector{V}}() # maybe a different stategy if right is unique
@@ -71,7 +59,6 @@ function innerjoin(lkey, rkey, f, ::typeof(isequal), left, right)
         push!(get!(()->Vector{V}(), dict, key), b)
     end
 
-    out = T[]
     for a ∈ left
         key = lkey(a)
         dict_index = Base.ht_keyindex(dict, key)
@@ -89,20 +76,19 @@ end
 #  * We can specialize these methods on particular arrays - works well for TypedTables.Table
 #    of AcceleratedArrays.AcceleratedArray
 
-function innerjoin(lkey, rkey, f, comparison, left::AbstractArray, right::AbstractArray)
-    innerjoin2(mapview(lkey, left), mapview(rkey, right), productview(f, left, right), comparison)
+function innerjoin!(out, lkey, rkey, f, comparison, left::AbstractArray, right::AbstractArray)
+    _innerjoin!(out, mapview(lkey, left), mapview(rkey, right), productview(f, left, right), comparison)
 end
 
-function innerjoin(lkey, rkey, f, ::typeof(isequal), left::AbstractArray, right::AbstractArray)
-    innerjoin2(mapview(lkey, left), mapview(rkey, right), productview(f, left, right), isequal)
+function innerjoin!(out, lkey, rkey, f, ::typeof(isequal), left::AbstractArray, right::AbstractArray)
+    _innerjoin!(out, mapview(lkey, left), mapview(rkey, right), productview(f, left, right), isequal)
 end
 
-function innerjoin2(l::AbstractArray, r::AbstractArray, v::AbstractArray, comparison)
+function _innerjoin!(out, l::AbstractArray, r::AbstractArray, v::AbstractArray, comparison)
     @boundscheck if (axes(l)..., axes(r)...) != axes(v)
         throw(DimensionMismatch("innerjoin arrays do not have matching dimensions"))
     end
 
-    out = Vector{eltype(v)}()
     @inbounds for i_l in keys(l)
         for i_r in keys(r)
             if comparison(l[i_l], r[i_r])
@@ -114,7 +100,7 @@ function innerjoin2(l::AbstractArray, r::AbstractArray, v::AbstractArray, compar
     return out
 end
 
-function innerjoin2(l::AbstractArray, r::AbstractArray, v::AbstractArray, ::typeof(isequal))
+function _innerjoin!(l::AbstractArray, r::AbstractArray, v::AbstractArray, ::typeof(isequal))
     @boundscheck if (axes(l)..., axes(r)...) != axes(v)
         throw(DimensionMismatch("innerjoin arrays do not have matching dimensions"))
     end
@@ -126,7 +112,6 @@ function innerjoin2(l::AbstractArray, r::AbstractArray, v::AbstractArray, ::type
         push!(get!(()->Vector{V}(), dict, r[i_r]), i_r)
     end
 
-    out = Vector{eltype(v)}()
     @inbounds for i_l in keys(l)
         l_value = l[i_l]
         dict_index = Base.ht_keyindex(dict, l_value)
