@@ -12,7 +12,7 @@ export single
 export mapmany, mapview, MappedIterator, MappedArray, product, productview, ProductArray
 
 # collections -> collections of collections
-export group, groupinds, Groups, groupview, groupreduce, grouplength, groupsum, groupprod
+export group, groupinds, Groups, groupview, groupreduce, groupcount, groupsum, groupprod
 export splitdims, splitdimsview, SplitDimsArray
 
 # colletions of collections -> collections

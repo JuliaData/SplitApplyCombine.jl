@@ -84,6 +84,63 @@ function innerjoin(lkey, rkey, f, ::typeof(isequal), left, right)
     return out
 end
 
+# For arrays, the assumptions around the below are
+#  * Accessing arrays via indices and mapviews should be similar in speed to the above
+#  * We can specialize these methods on particular arrays - works well for TypedTables.Table
+#    of AcceleratedArrays.AcceleratedArray
+
+function innerjoin(lkey, rkey, f, comparison, left::AbstractArray, right::AbstractArray)
+    innerjoin2(mapview(lkey, left), mapview(rkey, right), productview(f, left, right), comparison)
+end
+
+function innerjoin(lkey, rkey, f, ::typeof(isequal), left::AbstractArray, right::AbstractArray)
+    innerjoin2(mapview(lkey, left), mapview(rkey, right), productview(f, left, right), isequal)
+end
+
+function innerjoin2(l::AbstractArray, r::AbstractArray, v::AbstractArray, comparison)
+    @boundscheck if (axes(l)..., axes(r)...) != axes(v)
+        throw(DimensionMismatch("innerjoin arrays do not have matching dimensions"))
+    end
+
+    out = Vector{eltype(v)}()
+    @inbounds for i_l in keys(l)
+        for i_r in keys(r)
+            if comparison(l[i_l], r[i_r])
+                push!(out, v[Tuple(i_l)..., Tuple(i_r)...])
+            end
+        end
+    end
+
+    return out
+end
+
+function innerjoin2(l::AbstractArray, r::AbstractArray, v::AbstractArray, ::typeof(isequal))
+    @boundscheck if (axes(l)..., axes(r)...) != axes(v)
+        throw(DimensionMismatch("innerjoin arrays do not have matching dimensions"))
+    end
+
+    rkeys = keys(r)
+    V = eltype(rkeys)
+    dict = Dict{eltype(r), Vector{V}}()
+    @inbounds for i_r ∈ rkeys
+        push!(get!(()->Vector{V}(), dict, r[i_r]), i_r)
+    end
+
+    out = Vector{eltype(v)}()
+    @inbounds for i_l in keys(l)
+        l_value = l[i_l]
+        dict_index = Base.ht_keyindex(dict, l_value)
+        if dict_index > 0 # -1 if key not found
+            for i_r ∈ dict.vals[dict_index]
+                push!(out, v[Tuple(i_l)..., Tuple(i_r)...])
+            end
+        end
+    end
+
+    return out
+end
+
+
 # TODO more specialized methods for comparisons: ==, <, isless, etc - via sorting strategies
 
 # TODO perhaps a better version would be:

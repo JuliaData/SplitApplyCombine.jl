@@ -14,6 +14,8 @@ Dict{Bool,Array{Int64,1}} with 2 entries:
 """
 group(by, iter) = group(by, identity, iter)
 
+group(iter) = group(identity, identity, iter) # Not particularly useful, yet consistent with `groupinds`
+
 """
     group(by, f, iter...)
 
@@ -51,12 +53,11 @@ group(by, f, a::AbstractArray) = group2(mapview(by, a), mapview(f, a))
 
 function group2(groups, values)
     # TODO: assert that keys(groups) match up to keys(values)
-    V = eltype(values)
-    out = Dict{eltype(groups), Vector{V}}()
+    out = Dict{eltype(groups), typeof(empty(values))}()
     @inbounds for i ∈ keys(groups)
         group = groups[i]
         value = values[i]
-        push!(get!(Vector{V}, out, group), value)
+        push!(get!(() -> empty(values), out, group), value)
     end
     return out
 end
@@ -90,6 +91,8 @@ function groupinds(by, iter)
     end
     return out
 end
+
+groupinds(iter) = groupinds(identity, iter)
 
 function groupinds(by, a::AbstractArray)
     _groupinds(mapview(by, a))
@@ -173,15 +176,17 @@ function groupview(by, iter)
     return Groups{keytype(inds), V, typeof(iter), typeof(inds)}(iter, inds)
 end
 
+groupview(iter) = groupview(identity, iter)
+
 """
-    groupreduce(by, op, f, iter...; [init])
+    groupreduce(by, f, op, iter...; [init])
 
 Applies a `mapreduce`-like operation on the groupings labeled by passing the elements of
-`iter` through `by`. Mostly equivalent to `map(g -> reduce(op, v0, g), group(by, f, iter))`,
+`iter` through `by`. Mostly equivalent to `map(g -> reduce(op, g), group(by, f, iter))`,
 but designed to be more efficient. If multiple collections (of the same length) are
 provided, the transformations `by` and `f` occur elementwise.
 """
-function groupreduce(by, op, f, iter; kw...)
+function groupreduce(by, f, op, iter; kw...)
     # TODO Do this inference-free, like comprehensions...
     nt = kw.data
     T = eltype(iter)
@@ -208,7 +213,7 @@ function groupreduce(by, op, f, iter; kw...)
     return out
 end
 
-groupreduce(by, op, f, iter1, iter2, iters...; kw...) = groupreduce((x -> by(x...)), op, (x -> f(x...)), zip(iter1, iter2, iters...); kw...)
+groupreduce(by, f, op, iter1, iter2, iters...; kw...) = groupreduce((x -> by(x...)), (x -> f(x...)), op, zip(iter1, iter2, iters...); kw...)
 
 """
     groupreduce(by, op, iter; [init])
@@ -224,29 +229,36 @@ false => 25
 true  => 30
 ```
 """
-groupreduce(by, op, iter; kw...) = groupreduce(by, op, identity, iter; kw...)
+groupreduce(by, op, iter; kw...) = groupreduce(by, identity, op, iter; kw...)
+groupreduce(op, iter; kw...) = groupreduce(identity, identity, op, iter; kw...)
 
 # Special group operators
 
+@deprecate grouplength(by, iter) groupcount(by, iter)
+export grouplength
+
 """
-    grouplength(by, iter)
+    groupcount([by], iter)
 
 Determine the number of elements of `iter` belonging to each group.
 """
-grouplength(by, iter) = groupreduce(by, +, x->1, iter)
+groupcount(by, iter) = groupreduce(by, x->1, +, iter)
+groupcount(iter) = groupcount(identity, iter) # A handy extension of `unique`
 
 """
     groupsum(by, [f], iter)
 
 Sum the elements of `iter` belonging to different groups, optionally mapping by `f`.
 """
-groupsum(by, iter) = groupreduce(by, +, identity, iter)
-groupsum(by, f, iter) = groupreduce(by, +, f, iter)
+groupsum(by, iter) = groupreduce(by, identity, +, iter)
+groupsum(by, f, iter) = groupreduce(by, f, +, iter)
+groupsum(iter) = groupreduce(identity, identity, +, iter) # For consistency
 
 """
     groupprod(by, [f], iter)
 
 Multiply the elements of `iter` belonging to different groups, optionally mapping by `f`.
 """
-groupprod(by, iter) = groupreduce(by, *, identity, iter)
-groupprod(by, f, iter) = groupreduce(by, *, f, iter)
+groupprod(by, iter) = groupreduce(by, identity, *, iter)
+groupprod(by, f, iter) = groupreduce(by, f, *, iter)
+groupprod(iter) = groupreduce(identity, identity, *, iter) # For consistency

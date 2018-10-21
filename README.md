@@ -401,14 +401,14 @@ julia> v
   8
 ```
 
-### `groupreduce(by, op, [f = identity], iter...; [init])`
+### `groupreduce(by, [f = identity], op, iter...; [init])`
 
 Applies a `mapreduce`-like operation on the groupings labeled by passing the elements of
 `iter` through `by`. Mostly equivalent to `map(g -> reduce(op, g; init=init), group(by, f, iter))`,
 but designed to be more efficient. If multiple collections (of the same length) are
 provided, the transformations `by` and `f` occur elementwise.
 
-We also export `grouplength`, `groupsum` and `groupprod` as special cases of the above, to determine
+We also export `groupcount`, `groupsum` and `groupprod` as special cases of the above, to determine
 the number of elements per group, their sum, and their product, respectively.
 
 #### Examples:
@@ -418,7 +418,7 @@ Dict{Bool,Int64} with 2 entries:
   false => 25
   true  => 30
 
-julia> grouplength(iseven, 1:10)
+julia> groupcount(iseven, 1:10)
 Dict{Bool,Int64} with 2 entries:
   false => 5
   true  => 5
