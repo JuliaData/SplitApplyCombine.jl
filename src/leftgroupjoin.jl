@@ -1,5 +1,5 @@
 leftgroupjoin(left, right) = leftgroupjoin(identity, identity, left, right)
-leftgroupjoin(lkey, rkey, left, right) = leftgroupjoin(lkey, rkey, tuple, left, right)
+leftgroupjoin(lkey, rkey, left, right) = leftgroupjoin(lkey, rkey, merge, left, right)
 leftgroupjoin(lkey, rkey, f, left, right) = leftgroupjoin(lkey, rkey, f, isequal, left, right)
 
 """
@@ -58,6 +58,34 @@ function leftgroupjoin(lkey, rkey, f, ::typeof(isequal), left, right)
     for a ∈ left
         key = lkey(a)
         group = get!(() -> T[], out, key)
+        dict_index = Base.ht_keyindex(dict, key)
+        if dict_index > 0 # -1 if key not found
+            for b ∈ dict.vals[dict_index]
+                push!(group, f(a, b))
+            end
+        end
+    end
+    return out
+end
+
+function leftgroupjoin(lkey, rkey, f, ::typeof(isequal), left::AbstractArray, right::AbstractArray)
+    # isequal heralds a hash-based approach, roughly O(length(left) * log(length(right)))
+
+    # TODO Do this inference-free, like comprehensions...
+    T = promote_op(f, eltype(left), eltype(right))
+    K = promote_op(rkey, eltype(right))
+    V = eltype(right)
+    dict = Dict{K,Vector{V}}() # maybe a different stategy if right is unique
+    for b ∈ right
+        key = rkey(b)
+        push!(get!(()->Vector{V}(), dict, key), b)
+    end
+
+    K2 = promote_op(lkey, eltype(left))
+    out = Dict{K2, typeof(empty(left, T))}()
+    for a ∈ left
+        key = lkey(a)
+        group = get!(() -> empty(left, T), out, key)
         dict_index = Base.ht_keyindex(dict, key)
         if dict_index > 0 # -1 if key not found
             for b ∈ dict.vals[dict_index]
