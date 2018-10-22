@@ -9,8 +9,7 @@
                 true => [(2, 0), (2, 2), (4, 0), (4, 2)])
 
 
-    @test leftgroupjoin(l ,r) == ans1
-    @test leftgroupjoin(iseven, iseven, l, r) == ans2
+    @test leftgroupjoin(identity, identity, tuple, l ,r) == ans1
     @test leftgroupjoin(iseven, iseven, tuple, l,  r) == ans2
     @test leftgroupjoin(iseven, iseven, tuple, ==, l, r) == ans2
 end
