@@ -1,7 +1,8 @@
 # Join works on collections of collections (e.g. a table is a collection of
 # rows).
 
-innerjoin(left, right) = innerjoin(identity, identity, left, right)
+innerjoin(left, right) = innerjoin(identity, left, right)
+innerjoin(lkey, left, right) = innerjoin(lkey, lkey, left, right)
 innerjoin(lkey, rkey, left, right) = innerjoin(lkey, rkey, merge, left, right)
 innerjoin(lkey, rkey, f, left, right) = innerjoin(lkey, rkey, f, isequal, left, right)
 
