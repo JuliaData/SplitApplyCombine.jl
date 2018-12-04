@@ -8,8 +8,6 @@ Performs a relational-style join operation between iterables `left` and `right`,
 a collection of elements `f(l, r)` for which `comparison(lkey(l), rkey(r))` is `true` where
 `l ∈ left`, `r ∈ right.`
 
-By default, tests for equality at the common `propertynames` of `l` and `r`.
-
 # Example
 
 ```jldoctest

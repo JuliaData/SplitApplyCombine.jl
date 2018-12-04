@@ -5,8 +5,6 @@ Creates a collection if groups labelled by `lkey(l)` where each group contains e
 `f(l, r)` which satisfy `comparison(lkey(l), rkey(r))`. If there are no matches, the group
 is still created (with an empty collection).
 
-By default, tests for equality at the common `propertynames` of `l` and `r`.
-
 This operation shares some similarities with an SQL left outer join.
 
 ### Example
