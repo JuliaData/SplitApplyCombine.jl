@@ -1,46 +1,47 @@
-leftgroupjoin(left, right) = leftgroupjoin(identity, identity, left, right)
-leftgroupjoin(lkey, rkey, left, right) = leftgroupjoin(lkey, rkey, merge, left, right)
-leftgroupjoin(lkey, rkey, f, left, right) = leftgroupjoin(lkey, rkey, f, isequal, left, right)
-
 """
-    leftgroupjoin(lkey, rkey, f, comparison, left, right)
+    leftgroupjoin(left, right; lkey = identity, rkey = lkey, f = tuple, comparison = isequal)
 
 Creates a collection if groups labelled by `lkey(l)` where each group contains elements
 `f(l, r)` which satisfy `comparison(lkey(l), rkey(r))`. If there are no matches, the group
 is still created (with an empty collection).
+
+By default, tests for equality at the common `propertynames` of `l` and `r`.
 
 This operation shares some similarities with an SQL left outer join.
 
 ### Example
 
 ```jldoctest
-julia> leftgroupjoin(iseven, iseven, tuple, ==, [1,2,3,4], [0,1,2])
+julia> leftgroupjoin([1,2,3,4], [0,1,2], lkey = iseven)
 Dict{Bool,Array{Tuple{Int64,Int64},1}} with 2 entries:
   false => Tuple{Int64,Int64}[(1, 1), (3, 1)]
   true  => Tuple{Int64,Int64}[(2, 0), (2, 2), (4, 0), (4, 2)]
 ```
 """
-function leftgroupjoin(lkey, rkey, f, comparison, left, right)
+function leftgroupjoin(left, right; lkey = identity, rkey = lkey, f = tuple, comparison = isequal)
     # The O(length(left)*length(right)) generic method when nothing about `comparison` is known
-
-    # TODO Do this inference-free, like comprehensions...
-    T = promote_op(f, eltype(left), eltype(right))
-    K = promote_op(lkey, eltype(left))
-    V = Vector{T}
-    out = Dict{K, V}()
-    for a ∈ left
-        key = lkey(a)
-        group = get!(() -> T[], out, key)
-        for b ∈ right
-            if comparison(lkey(a), rkey(b))
-                push!(group, f(a, b))
+    if isa(comparison, typeof(isequal))
+         leftgroupjoin_hash(lkey, rkey, f, comparison, left, right)
+    else
+        # TODO Do this inference-free, like comprehensions...
+        T = promote_op(f, eltype(left), eltype(right))
+        K = promote_op(lkey, eltype(left))
+        V = Vector{T}
+        out = Dict{K, V}()
+        for a ∈ left
+            key = lkey(a)
+            group = get!(() -> T[], out, key)
+            for b ∈ right
+                if comparison(lkey(a), rkey(b))
+                    push!(group, f(a, b))
+                end
             end
         end
+        return out
     end
-    return out
 end
 
-function leftgroupjoin(lkey, rkey, f, ::typeof(isequal), left, right)
+function leftgroupjoin_hash(lkey, rkey, f, ::typeof(isequal), left, right)
     # isequal heralds a hash-based approach, roughly O(length(left) * log(length(right)))
 
     # TODO Do this inference-free, like comprehensions...
@@ -68,7 +69,7 @@ function leftgroupjoin(lkey, rkey, f, ::typeof(isequal), left, right)
     return out
 end
 
-function leftgroupjoin(lkey, rkey, f, ::typeof(isequal), left::AbstractArray, right::AbstractArray)
+function leftgroupjoin_hash(lkey, rkey, f, ::typeof(isequal), left::AbstractArray, right::AbstractArray)
     # isequal heralds a hash-based approach, roughly O(length(left) * log(length(right)))
 
     # TODO Do this inference-free, like comprehensions...

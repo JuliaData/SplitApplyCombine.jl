@@ -1,23 +1,19 @@
 # Join works on collections of collections (e.g. a table is a collection of
 # rows).
 
-innerjoin(left, right) = innerjoin(identity, identity, left, right)
-innerjoin(lkey, rkey, left, right) = innerjoin(lkey, rkey, merge, left, right)
-innerjoin(lkey, rkey, f, left, right) = innerjoin(lkey, rkey, f, isequal, left, right)
-
-const ⨝ = innerjoin
-
 """
-    innerjoin(lkey, rkey, f, comparison, left, right)
+    innerjoin(left, right; lkey = identity, rkey = lkey, f = tuple, comparison = isequal)
 
 Performs a relational-style join operation between iterables `left` and `right`, returning
 a collection of elements `f(l, r)` for which `comparison(lkey(l), rkey(r))` is `true` where
 `l ∈ left`, `r ∈ right.`
 
+By default, tests for equality at the common `propertynames` of `l` and `r`.
+
 # Example
 
 ```jldoctest
-julia> innerjoin(iseven, iseven, tuple, ==, [1,2,3,4], [0,1,2])
+julia> innerjoin([1,2,3,4], [0,1,2], lkey = iseven)
 6-element Array{Tuple{Int64,Int64},1}:
  (1, 1)
  (2, 0)
@@ -27,7 +23,7 @@ julia> innerjoin(iseven, iseven, tuple, ==, [1,2,3,4], [0,1,2])
  (4, 2)
 ```
 """
-function innerjoin(lkey, rkey, f, comparison, left, right)
+function innerjoin(left, right; lkey = identity, rkey = lkey, f = tuple, comparison = isequal)
     # TODO Do this inference-free, like comprehensions...
     T = promote_op(f, eltype(left), eltype(right))
     out = empty(left, T)
@@ -35,6 +31,8 @@ function innerjoin(lkey, rkey, f, comparison, left, right)
     innerjoin!(out, lkey, rkey, f, comparison, left, right)
     return out
 end
+
+const ⨝ = innerjoin
 
 function innerjoin!(out, lkey, rkey, f, comparison, left, right)
     # The O(length(left)*length(right)) generic method when nothing about `comparison` is known
