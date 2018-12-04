@@ -36,6 +36,6 @@ include("invert.jl")
 # Silly definitions missing from Base
 # ===================================
 # this should always work
-Base.haskey(a, i) = i ∈ keys(a) 
+Base.haskey(a, i) = i ∈ keys(a)
 
 end # module
