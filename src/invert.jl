@@ -37,7 +37,7 @@ julia> invert((a = [1, 2, 3], b = [2.0, 4.0, 6.0]))
         end
     end
 
-    out = Array{Array{eltype(T),length(outersize)}}(undef, outersize)
+    out = Array{Array{eltype(T),length(innersize)}}(undef, outersize)
     @inbounds for i in outerkeys
         out[i] = Array{eltype(T)}(undef, innersize)
     end
