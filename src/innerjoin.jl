@@ -100,7 +100,7 @@ function _innerjoin!(out, l::AbstractArray, r::AbstractArray, v::AbstractArray, 
     return out
 end
 
-function _innerjoin!(l::AbstractArray, r::AbstractArray, v::AbstractArray, ::typeof(isequal))
+function _innerjoin!(out, l::AbstractArray, r::AbstractArray, v::AbstractArray, ::typeof(isequal))
     @boundscheck if (axes(l)..., axes(r)...) != axes(v)
         throw(DimensionMismatch("innerjoin arrays do not have matching dimensions"))
     end
