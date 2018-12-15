@@ -10,7 +10,11 @@
 	@testset "Arrays of NamedTuple" begin
 	    l = [(a=1, b=2.0), (a=2, b=4.0), (a=3, b=6.0)]
 	    r = [(a=1, c=:a), (a=2, c=:b), (a=4,c=:d)]
+<<<<<<< HEAD
 	    @test collect(Generator(t -> merge(t...), Iterators.filter(Match(key = Names(:a)), product(l, r)))) ==
+=======
+	    @test collect(Generator(t -> merge(t...), Iterators.filter(Match(key = x -> x.a), product(l, r)))) ==
+>>>>>>> restore previous code
             [(a=1, b=2.0, c=:a), (a=2, b=4.0, c=:b)]
 	end
 end

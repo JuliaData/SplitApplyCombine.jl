@@ -1,12 +1,8 @@
-leftgroupjoin(left, right) = leftgroupjoin(identity, identity, left, right)
-leftgroupjoin(lkey, rkey, left, right) = leftgroupjoin(lkey, rkey, merge, left, right)
-leftgroupjoin(lkey, rkey, f, left, right) = leftgroupjoin(lkey, rkey, f, isequal, left, right)
-
 """
-    leftgroupjoin(lkey, rkey, f, comparison, left, right)
+    leftgroupjoin([f = tuple], m::Match, left, right)
 
-Creates a collection if groups labelled by `lkey(l)` where each group contains elements
-`f(l, r)` which satisfy `comparison(lkey(l), rkey(r))`. If there are no matches, the group
+Creates a collection if groups labelled by `m.left_key(l)` where each group contains elements
+`f(l, r)` which satisfy `m.compare(m.left_key(l), m.right_key(r))`. If there are no matches, the group
 is still created (with an empty collection).
 
 This operation shares some similarities with an SQL left outer join.
@@ -14,12 +10,16 @@ This operation shares some similarities with an SQL left outer join.
 ### Example
 
 ```jldoctest
-julia> leftgroupjoin(iseven, iseven, tuple, ==, [1,2,3,4], [0,1,2])
+julia> leftgroupjoin(Match(key = iseven), [1,2,3,4], [0,1,2])
 Dict{Bool,Array{Tuple{Int64,Int64},1}} with 2 entries:
   false => Tuple{Int64,Int64}[(1, 1), (3, 1)]
   true  => Tuple{Int64,Int64}[(2, 0), (2, 2), (4, 0), (4, 2)]
 ```
 """
+leftgroupjoin(f, m::Match, left, right) =
+    leftgroupjoin(m.left_key, m.right_key, f, m.compare, left, right)
+leftgroupjoin(m::Match, left, right) = leftgroupjoin(tuple, m, left, right)
+
 function leftgroupjoin(lkey, rkey, f, comparison, left, right)
     # The O(length(left)*length(right)) generic method when nothing about `comparison` is known
 

@@ -6,7 +6,6 @@ version = "0.3.1"
 [deps]
 Indexing = "313cdc1a-70c2-5d6a-ae34-0150d3930a38"
 JuliennedArrays = "5cadff95-7770-533d-a838-a1bf817ee6e0"
-LightQuery = "a6f99520-0501-547d-81af-dc7bed1e4d5a"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

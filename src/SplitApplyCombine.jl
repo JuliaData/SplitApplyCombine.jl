@@ -5,9 +5,12 @@ using Base: @propagate_inbounds, @pure, promote_op, ht_keyindex2!, Generator, @d
 import JuliennedArrays: Reduce
 export Reduce
 
+<<<<<<< HEAD
 import LightQuery: Names
 export Names
 
+=======
+>>>>>>> restore previous code
 import Base: merge, merge!, size, IndexStyle, getindex, parent, axes, keys, empty, getindex, collect
 import Base.Iterators: Filter, ProductIterator, product, flatten
 # collections -> scalar

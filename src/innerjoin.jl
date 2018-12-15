@@ -31,6 +31,7 @@ Match(; compare = isequal, key = identity, right_key = key) =
 
 (m::Match)(t) = m.compare(m.left_key(t[1]), m.right_key(t[2]))
 
+<<<<<<< HEAD
 const InnerJoin = Filter{F, ProductIterator{Tuple{A1, A2}}} where {F <: Match, A1, A2}
 
 collect(it::InnerJoin) = collect(Generator(identity, it))
@@ -41,6 +42,17 @@ function collect(g::Generator{I}) where I <: InnerJoin
     flt = iter.flt
     left = iterators[1]
     right = iterators[2]
+=======
+const InnerJoin = Filter{F, I} where {F <: Match, I <: AbstractProduct}
+
+collect(it::InnerJoin) = inner_join(identity, it.flt, iterators(it.itr)...)
+function collect(g::Generator{I}) where I <: InnerJoin
+    iter = g.iter
+    inner_join(g.f, iter.flt, iterators(iter.itr)...)
+end
+
+function inner_join(f, flt::Match, left::AbstractArray, right::AbstractArray)
+>>>>>>> restore previous code
     ProductEltype = Tuple{eltype(left), eltype(right)}
     # TODO Do this inference-free, like comprehensions...
     out = empty(left, promote_op(f, ProductEltype))
