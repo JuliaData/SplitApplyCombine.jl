@@ -1,23 +1,23 @@
-# Join works on collections of collections (e.g. a table is a collection of
-# rows).
-
-innerjoin(left, right) = innerjoin(identity, identity, left, right)
-innerjoin(lkey, rkey, left, right) = innerjoin(lkey, rkey, merge, left, right)
-innerjoin(lkey, rkey, f, left, right) = innerjoin(lkey, rkey, f, isequal, left, right)
-
-const ⨝ = innerjoin
+export Match
+struct Match{Compare, LeftKey, RightKey}
+    compare::Compare
+    left_key::LeftKey
+    right_key::RightKey
+end
 
 """
-    innerjoin(lkey, rkey, f, comparison, left, right)
+    Match(; compare = isequal, key = identity, right_key = key)
 
-Performs a relational-style join operation between iterables `left` and `right`, returning
-a collection of elements `f(l, r)` for which `comparison(lkey(l), rkey(r))` is `true` where
-`l ∈ left`, `r ∈ right.`
-
-# Example
+When called on a pair, `compare` `key(pair[1])` with `right_key(pair[2])`. Enables
+hashing optimzations when filtering a product.
 
 ```jldoctest
-julia> innerjoin(iseven, iseven, tuple, ==, [1,2,3,4], [0,1,2])
+julia> import SplitApplyCombine
+
+julia> Match(key = abs)((1, -1))
+true
+
+julia> collect(Iterators.filter(Match(key = iseven), product([1,2,3,4], [0,1,2])))
 6-element Array{Tuple{Int64,Int64},1}:
  (1, 1)
  (2, 0)
@@ -25,27 +25,26 @@ julia> innerjoin(iseven, iseven, tuple, ==, [1,2,3,4], [0,1,2])
  (3, 1)
  (4, 0)
  (4, 2)
-```
 """
-function innerjoin(lkey, rkey, f, comparison, left, right)
+Match(; compare = isequal, key = identity, right_key = key) =
+    Match(compare, key, right_key)
+
+(m::Match)(t) = m.compare(m.left_key(t[1]), m.right_key(t[2]))
+
+const InnerJoin = Filter{F, ProductIterator{Tuple{A1, A2}}} where {F <: Match, A1, A2}
+
+collect(it::InnerJoin) = collect(Generator(identity, it))
+function collect(g::Generator{I}) where I <: InnerJoin
+    iter = g.iter
+    f = g.f
+    iterators = iter.itr.iterators
+    flt = iter.flt
+    left = iterators[1]
+    right = iterators[2]
+    ProductEltype = Tuple{eltype(left), eltype(right)}
     # TODO Do this inference-free, like comprehensions...
-    T = promote_op(f, eltype(left), eltype(right))
-    out = empty(left, T)
-
-    innerjoin!(out, lkey, rkey, f, comparison, left, right)
-    return out
-end
-
-function innerjoin!(out, lkey, rkey, f, comparison, left, right)
-    # The O(length(left)*length(right)) generic method when nothing about `comparison` is known
-    for a ∈ left
-        for b ∈ right
-            if comparison(lkey(a), rkey(b))
-                push!(out, f(a, b))
-            end
-        end
-    end
-    return out
+    out = empty(left, promote_op(f, ProductEltype))
+    innerjoin!(out, flt.left_key, flt.right_key, f, flt.compare, left, right)
 end
 
 function innerjoin!(out, lkey, rkey, f, ::typeof(isequal), left, right)
@@ -72,19 +71,19 @@ function innerjoin!(out, lkey, rkey, f, ::typeof(isequal), left, right)
 end
 
 # For arrays, the assumptions around the below are
-#  * Accessing arrays via indices and mapviews should be similar in speed to the above
+#  * Accessing arrays via indices and Generators should be similar in speed to the above
 #  * We can specialize these methods on particular arrays - works well for TypedTables.Table
 #    of AcceleratedArrays.AcceleratedArray
 
 function innerjoin!(out, lkey, rkey, f, comparison, left::AbstractArray, right::AbstractArray)
-    _innerjoin!(out, mapview(lkey, left), mapview(rkey, right), productview(f, left, right), comparison)
+    _innerjoin!(out, Generator(lkey, left), Generator(rkey, right), Generator(f, product(left, right)), comparison)
 end
 
 function innerjoin!(out, lkey, rkey, f, ::typeof(isequal), left::AbstractArray, right::AbstractArray)
-    _innerjoin!(out, mapview(lkey, left), mapview(rkey, right), productview(f, left, right), isequal)
+    _innerjoin!(out, Generator(lkey, left), Generator(rkey, right), Generator(f, product(left, right)), isequal)
 end
 
-function _innerjoin!(out, l::AbstractArray, r::AbstractArray, v::AbstractArray, comparison)
+function _innerjoin!(out, l, r, v, comparison)
     @boundscheck if (axes(l)..., axes(r)...) != axes(v)
         throw(DimensionMismatch("innerjoin arrays do not have matching dimensions"))
     end
@@ -100,7 +99,7 @@ function _innerjoin!(out, l::AbstractArray, r::AbstractArray, v::AbstractArray, 
     return out
 end
 
-function _innerjoin!(l::AbstractArray, r::AbstractArray, v::AbstractArray, ::typeof(isequal))
+function _innerjoin!(l, r, v, ::typeof(isequal))
     @boundscheck if (axes(l)..., axes(r)...) != axes(v)
         throw(DimensionMismatch("innerjoin arrays do not have matching dimensions"))
     end
