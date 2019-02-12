@@ -172,8 +172,9 @@ julia> v
 """
 function groupview(by, iter)
     inds = groupinds(by, iter)
-    V = promote_op(view, iter, eltype(inds))
-    return Groups{keytype(inds), V, typeof(iter), typeof(inds)}(iter, inds)
+    T = typeof(iter)
+    V = promote_op(view, T, eltype(inds))
+    return Groups{keytype(inds), V, T, typeof(inds)}(iter, inds)
 end
 
 groupview(iter) = groupview(identity, iter)
