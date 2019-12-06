@@ -3,8 +3,6 @@
 *Strategies for nested data in Julia*
 
 [![Build Status](https://travis-ci.org/JuliaData/SplitApplyCombine.jl.svg?branch=master)](https://travis-ci.org/JuliaData/SplitApplyCombine.jl)
-[![Build status](https://ci.appveyor.com/api/projects/status/y8lb4487o1jll0wh?svg=true)](https://ci.appveyor.com/project/andyferris/splitapplycombine-jl)
-[![Coverage Status](https://coveralls.io/repos/github/JuliaData/SplitApplyCombine.jl/badge.svg?branch=master)](https://coveralls.io/github/JuliaData/SplitApplyCombine.jl?branch=master)
 [![codecov.io](http://codecov.io/github/JuliaData/SplitApplyCombine.jl/coverage.svg?branch=master)](http://codecov.io/github/JuliaData/SplitApplyCombine.jl?branch=master)
 
 *SplitApplyCombine.jl* provides high-level, generic tools for manipulating data -

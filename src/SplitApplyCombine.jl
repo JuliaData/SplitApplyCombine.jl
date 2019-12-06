@@ -2,11 +2,15 @@ module SplitApplyCombine
 
 using Base: @propagate_inbounds, @pure, promote_op
 using Indexing
+using Dictionaries
 
 import Base: merge, merge!, size, IndexStyle, getindex, parent, axes, ht_keyindex2!, iterate
 
 # collections -> scalar
-export single
+if VERSION < v"1.4.0-DEV"
+    export only
+    include("only.jl")
+end
 
 # collections -> collections
 export mapmany, mapview, MappedIterator, MappedArray, product, productview, ProductArray
@@ -23,7 +27,6 @@ export combinedims, combinedimsview, CombineDimsArray
 export invert, invert! # a "transpose" for nested containers
 export innerjoin, ⨝, leftgroupjoin
 
-include("single.jl")
 include("map.jl")
 include("group.jl")
 include("product.jl")
