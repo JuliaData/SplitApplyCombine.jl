@@ -109,6 +109,13 @@ julia> b
 """
 mapview(f, a) = MappedIterator(f, a)
 mapview(f, a::AbstractArray{T, N}) where {T, N} = MappedArray{promote_op(f, T), N, typeof(f), typeof(a)}(f, a)
+function mapview(f, d::AbstractDictionary)
+    I = keytype(d)
+    T = Core.Compiler.return_type(f, Tuple{eltype(d)})
+    
+    return MappedDictionary{I, T, typeof(f), Tuple{typeof(d)}}(f, (d,))
+end
 
 mapview(::typeof(identity), a) = a
 mapview(::typeof(identity), a::AbstractArray) = a
+mapview(::typeof(identity), d::AbstractDictionary) = d

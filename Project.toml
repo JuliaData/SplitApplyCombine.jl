@@ -16,4 +16,4 @@ test = ["Test"]
 [compat]
 julia = "1"
 Indexing = "1.1"
-Dictionaries = "0.1"
+Dictionaries = "0.2"

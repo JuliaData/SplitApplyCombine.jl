@@ -1,6 +1,6 @@
 module SplitApplyCombine
 
-using Base: @propagate_inbounds, @pure, promote_op
+using Base: @propagate_inbounds, @pure, promote_op, Callable
 using Indexing
 using Dictionaries
 

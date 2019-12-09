@@ -1,7 +1,8 @@
 using SplitApplyCombine
+using Dictionaries
 using Test
 
-include("single.jl")
+include("only.jl")
 include("splitdims.jl")
 include("combinedims.jl")
 include("map.jl")
