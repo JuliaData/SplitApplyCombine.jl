@@ -39,7 +39,7 @@ README.
 ```julia
 julia> using SplitApplyCombine
 
-julia> single([3]) # return the one-and-only element of the input
+julia> only([3]) # return the one-and-only element of the input (included in Julia 1.4)
 3
 
 julia> splitdims([1 2 3; 4 5 6]) # create nested arrays
@@ -60,14 +60,14 @@ julia> combinedims([[1, 4], [2, 5], [3, 6]]) # flatten nested arrays
  [3, 6]
 
 julia> group(iseven, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) # split elements into groups
-Dict{Bool,Array{Int64,1}} with 2 entries:
-  false => [1, 3, 5, 7, 9]
-  true  => [2, 4, 6, 8, 10]
+2-element HashDictionary{Bool,Array{Int64,1}}
+ false │ [1, 3, 5, 7, 9]
+  true │ [2, 4, 6, 8, 10]
 
 julia> groupreduce(iseven, +, 1:10) # like above, but performing reduction
-Dict{Bool,Int64} with 2 entries:
-  false => 25
-  true  => 30
+2-element HashDictionary{Bool,Int64}
+ false │ 25
+  true │ 30
 
 julia> innerjoin(iseven, iseven, tuple, [1,2,3,4], [0,1,2]) # combine two datasets - related to SQL `inner join`
 6-element Array{Tuple{Int64,Int64},1}:
@@ -105,21 +105,20 @@ that may be extended and built upon by other packages.
 
 ## Notes
 
-This package is nascent and many of the APIs here should be considered "under development"
-for the time being. Many of the functions so far are inspired by other systems, such as
-LINQ. The package current supports Julia v0.6 and v0.7/v1.0. Contributions and ideas very
-welcome.
+This package recently switched from using the dictionaries in `Base` to those in the
+[*Dictionaries.jl*][https://github.com/andyferris/Dictionaries.jl] package, particularly
+for the `group` family of functions.
 
 # API reference
 
-The package currently implements and exports `single`, `splitdims`, `splitdimsview`,
+The package currently implements and exports `only`, `splitdims`, `splitdimsview`,
 `combinedims`, `combinedimsview`, `mapmany`, `flatten`, `group`, `groupinds`, `groupview`,
 `groupreduce`, `innerjoin` and `leftgroupjoin`, as well as the `@_` macro. Expect this list
 to grow.
 
 ## Generic operations on collections
 
-### `single(iter)`
+### `only(iter)`
 
 Returns the single, one-and-only element of the collection `iter`. If it contains zero
 elements or more than one element, an error is thrown.
@@ -127,18 +126,18 @@ elements or more than one element, an error is thrown.
 #### Example:
 
 ```julia
-julia> single([3])
+julia> only([3])
 3
 
-julia> single([])
+julia> only([])
 ERROR: ArgumentError: Collection must have exactly one element (input was empty)
 Stacktrace:
- [1] single(::Array{Any,1}) at /home/ferris/.julia/v0.7/SAC/src/single.jl:4
+ [1] only(::Array{Any,1}) at /home/ferris/.julia/v0.7/SAC/src/only.jl:4
 
 julia> single([3, 10])
 ERROR: ArgumentError: Collection must have exactly one element (input contained more than one element)
 Stacktrace:
- [1] single(::Array{Int64,1}) at /home/ferris/.julia/v0.7/SAC/src/single.jl:10
+ [1] only(::Array{Int64,1}) at /home/ferris/.julia/v0.7/SAC/src/only.jl:10
 ```
 
 ### `splitdims(array, [dims])`
@@ -315,7 +314,7 @@ julia> productview(+, [1,2], [1,2,3])
 These operations help you split the elements of a collection according to an arbitrary
 function which maps each element to a group key.
 
-### `group(by, [f = identity], iter)`
+### `group([by = identity], [f = identity], iter)`
 
 Group the elements `x` of the iterable `iter` into groups labeled by `by(x)`, transforming
 each element . The default implementation creates a `Dict` of `Vector`s, but of course a
@@ -328,9 +327,9 @@ same length are provided.
 #### Examples:
 ```julia
 julia> group(iseven, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-Dict{Bool,Array{Int64,1}} with 2 entries:
-  false => [1, 3, 5, 7, 9]
-  true  => [2, 4, 6, 8, 10]
+2-element HashDictionary{Bool,Array{Int64,1}}
+ false │ [1, 3, 5, 7, 9]
+  true │ [2, 4, 6, 8, 10]
 
 julia> names = ["Andrew Smith", "John Smith", "Alice Baker", "Robert Baker",
                 "Jane Smith", "Jason Bourne"]
@@ -343,25 +342,26 @@ julia> names = ["Andrew Smith", "John Smith", "Alice Baker", "Robert Baker",
  "Jason Bourne"
 
 julia> group(last, first, split.(names))
-Dict{SubString{String},Array{SubString{String},1}} with 3 entries:
-  "Bourne" => SubString{String}["Jason"]
-  "Baker"  => SubString{String}["Alice", "Robert"]
-  "Smith"  => SubString{String}["Andrew", "John", "Jane"]
+3-element HashDictionary{SubString{String},Array{SubString{String},1}}
+ "Bourne" │ SubString{String}["Jason"]
+  "Baker" │ SubString{String}["Alice", "Robert"]
+  "Smith" │ SubString{String}["Andrew", "John", "Jane"]
 ```
 
-### `groupinds(by, iter)`
+### `groupfind(by, container)`
 
-For *indexable* collections `iter`, returns the indices/keys associated with each group.
-Similar to `group`, it supports multiple collections (with identical indices/keys) via the
-method `groupinds(by, iters...)`.
+For *indexable* collections `container`, returns the indices/keys associated with each group.
+
+**NOTE: Recently renamed from `groupinds`.**
 
 #### Example:
 
 ```julia
-julia> groupinds(iseven, [3,4,2,6,5,8])
-Dict{Bool,Array{Int64,1}} with 2 entries:
-  false => [1, 5]
-  true  => [2, 3, 4, 6]
+julia> groupfind(iseven, [3,4,2,6,5,8])
+2-element HashDictionary{Bool,Array{Int64,1}}
+ false │ [1, 5]
+  true │ [2, 3, 4, 6]
+
 ```
 
 ### `groupview(by, iter)`

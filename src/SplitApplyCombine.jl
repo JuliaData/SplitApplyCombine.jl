@@ -16,7 +16,7 @@ end
 export mapmany, mapview, MappedIterator, MappedArray, product, productview, ProductArray
 
 # collections -> collections of collections
-export group, groupinds, Groups, groupview, groupreduce, groupcount, groupsum, groupprod
+export group, groupfind, GroupDictionary, groupview, groupreduce, groupcount, groupsum, groupprod, groupunique, grouponly, groupfirst, grouplast
 export splitdims, splitdimsview, SplitDimsArray
 
 # colletions of collections -> collections
@@ -26,6 +26,9 @@ export combinedims, combinedimsview, CombineDimsArray
 # collections of collections -> collections of collections
 export invert, invert! # a "transpose" for nested containers
 export innerjoin, ⨝, leftgroupjoin
+
+@inline former(a, b) = a
+@inline latter(a, b) = b
 
 include("map.jl")
 include("group.jl")
