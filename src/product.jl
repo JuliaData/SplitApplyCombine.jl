@@ -16,12 +16,12 @@ julia> product(+, [1,2], [1,2,3])
  3  4  5
 ```
 """
-function product(f, a, b)
+function product(f::Callable, a, b)
 	out = similar(a, promote_op(f, eltype(a), eltype(b)), (axes(a)..., axes(b)...))
 	return product!(f, out, a, b)
 end
 
-@inline function product!(f, out, a, b)
+@inline function product!(f::Callable, out, a, b)
 	axes_a = axes(a)
 	axes_b = axes(b)
 	axes_out = axes(out)
@@ -72,7 +72,7 @@ julia> productview(+, [1,2], [1,2,3])
  3  4  5
 ```
 """
-function productview(f, a, b)
+function productview(f::Callable, a, b)
 	T = promote_op(f, eltype(a), eltype(b))
 	N = ndims(a) + ndims(b)
 	return ProductArray{T, N, typeof(f), typeof(a), typeof(b)}(f, a, b)

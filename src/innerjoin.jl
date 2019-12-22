@@ -2,8 +2,8 @@
 # rows).
 
 innerjoin(left, right) = innerjoin(identity, identity, left, right)
-innerjoin(lkey, rkey, left, right) = innerjoin(lkey, rkey, merge, left, right)
-innerjoin(lkey, rkey, f, left, right) = innerjoin(lkey, rkey, f, isequal, left, right)
+innerjoin(lkey::Callable, rkey::Callable, left, right) = innerjoin(lkey, rkey, merge, left, right)
+innerjoin(lkey::Callable, rkey::Callable, f::Callable, left, right) = innerjoin(lkey, rkey, f, isequal, left, right)
 
 const ⨝ = innerjoin
 
@@ -27,7 +27,7 @@ julia> innerjoin(iseven, iseven, tuple, ==, [1,2,3,4], [0,1,2])
  (4, 2)
 ```
 """
-function innerjoin(lkey, rkey, f, comparison, left, right)
+function innerjoin(lkey::Callable, rkey::Callable, f::Callable, comparison::Callable, left, right)
     # TODO Do this inference-free, like comprehensions...
     T = promote_op(f, eltype(left), eltype(right))
     out = empty(left, T)
@@ -36,7 +36,7 @@ function innerjoin(lkey, rkey, f, comparison, left, right)
     return out
 end
 
-function innerjoin!(out, lkey, rkey, f, comparison, left, right)
+function innerjoin!(out, lkey::Callable, rkey::Callable, f::Callable, comparison::Callable, left, right)
     # The O(length(left)*length(right)) generic method when nothing about `comparison` is known
     for a ∈ left
         for b ∈ right
@@ -48,7 +48,7 @@ function innerjoin!(out, lkey, rkey, f, comparison, left, right)
     return out
 end
 
-function innerjoin!(out, lkey, rkey, f, ::typeof(isequal), left, right)
+function innerjoin!(out, lkey::Callable, rkey::Callable, f::Callable, ::typeof(isequal), left, right)
     # isequal heralds a hash-based approach, roughly O(length(left) * log(length(right)))
 
     K = promote_op(rkey, eltype(right))
@@ -76,15 +76,15 @@ end
 #  * We can specialize these methods on particular arrays - works well for TypedTables.Table
 #    of AcceleratedArrays.AcceleratedArray
 
-function innerjoin!(out, lkey, rkey, f, comparison, left::AbstractArray, right::AbstractArray)
+function innerjoin!(out, lkey::Callable, rkey::Callable, f::Callable, comparison::Callable, left::AbstractArray, right::AbstractArray)
     _innerjoin!(out, mapview(lkey, left), mapview(rkey, right), productview(f, left, right), comparison)
 end
 
-function innerjoin!(out, lkey, rkey, f, ::typeof(isequal), left::AbstractArray, right::AbstractArray)
+function innerjoin!(out, lkey::Callable, rkey::Callable, f::Callable, ::typeof(isequal), left::AbstractArray, right::AbstractArray)
     _innerjoin!(out, mapview(lkey, left), mapview(rkey, right), productview(f, left, right), isequal)
 end
 
-function _innerjoin!(out, l::AbstractArray, r::AbstractArray, v::AbstractArray, comparison)
+function _innerjoin!(out, l::AbstractArray, r::AbstractArray, v::AbstractArray, comparison::Callable)
     @boundscheck if (axes(l)..., axes(r)...) != axes(v)
         throw(DimensionMismatch("innerjoin arrays do not have matching dimensions"))
     end

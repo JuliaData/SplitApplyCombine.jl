@@ -317,9 +317,9 @@ function which maps each element to a group key.
 ### `group([by = identity], [f = identity], iter)`
 
 Group the elements `x` of the iterable `iter` into groups labeled by `by(x)`, transforming
-each element . The default implementation creates a `Dict` of `Vector`s, but of course a
-table/dataframe package might extend this to return a suitable (nested) structure of
-tables/dataframes.
+each element . The default implementation creates a `Dictionaries.HashDictionary` of
+`Vector`s, but of course a table/dataframe package might extend this to return a suitable
+(nested) structure of tables/dataframes.
 
 Also a `group(by, f, iters...)` method exists for the case where multiple iterables of the
 same length are provided.
@@ -412,22 +412,20 @@ the number of elements per group, their sum, and their product, respectively.
 #### Examples:
 ```julia
 julia> groupreduce(iseven, +, 1:10)
-Dict{Bool,Int64} with 2 entries:
-  false => 25
-  true  => 30
+HashDictionary{Bool,Int64} with 2 entries:
+  false │ 25
+  true  │ 30
 
 julia> groupcount(iseven, 1:10)
-Dict{Bool,Int64} with 2 entries:
-  false => 5
-  true  => 5
+HashDictionary{Bool,Int64} with 2 entries:
+  false │ 5
+  true  │ 5
 ```
 
 
 ## Joining
 
 ### `innerjoin([lkey = identity], [rkey = identity], [f = tuple], [comparison = isequal], left, right)`
-
-WARNING: This API is a work-in-progress and may change in the future.
 
 Performs a relational-style join operation between iterables `left` and `right`, returning
 a collection of elements `f(l, r)` for which `comparison(lkey(l), rkey(r))` is `true` where
@@ -448,8 +446,6 @@ julia> innerjoin(iseven, iseven, tuple, ==, [1,2,3,4], [0,1,2])
 
 ### `leftgroupjoin([lkey = identity], [rkey = identity], [f = tuple], [comparison = isequal], left, right)`
 
-WARNING: This API is a work-in-progress and may change in the future.
-
 Creates a collection if groups labelled by `lkey(l)` where each group contains elements
 `f(l, r)` which satisfy `comparison(lkey(l), rkey(r))`. If there rae no matches, the group
 is still created (with an empty collection).
@@ -461,7 +457,7 @@ LINQ's `GroupJoin`.
 
 ```julia
 julia> leftgroupjoin(iseven, iseven, tuple, ==, [1,2,3,4], [0,1,2])
-Dict{Bool,Array{Tuple{Int64,Int64},1}} with 2 entries:
-  false => Tuple{Int64,Int64}[(1, 1), (3, 1)]
-  true  => Tuple{Int64,Int64}[(2, 0), (2, 2), (4, 0), (4, 2)]
+HashDictionary{Bool,Array{Tuple{Int64,Int64},1}} with 2 entries:
+  false │ Tuple{Int64,Int64}[(1, 1), (3, 1)]
+  true  │ Tuple{Int64,Int64}[(2, 0), (2, 2), (4, 0), (4, 2)]
 ```

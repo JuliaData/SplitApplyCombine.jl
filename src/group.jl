@@ -153,8 +153,8 @@ end
 Sum the elements of `iter` belonging to different groups, optionally mapping by `f`.
 """
 groupsum(iter) = groupsum(identity, iter)
-groupsum(by, iter) = groupsum(by, identity, iter)
-groupsum(by, f, iter) = groupreduce(by, f, +, iter)
+groupsum(by::Callable, iter) = groupsum(by, identity, iter)
+groupsum(by::Callable, f::Callable, iter) = groupreduce(by, f, +, iter)
 
 """
     groupprod(by, [f], iter)
@@ -162,15 +162,15 @@ groupsum(by, f, iter) = groupreduce(by, f, +, iter)
 Multiply the elements of `iter` belonging to different groups, optionally mapping by `f`.
 """
 groupprod(iter) = groupprod(identity, iter)
-groupprod(by, iter) = groupprod(by, identity, iter)
-groupprod(by, f, iter) = groupreduce(by, f, *, iter)
+groupprod(by::Callable, iter) = groupprod(by, identity, iter)
+groupprod(by::Callable, f::Callable, iter) = groupreduce(by, f, *, iter)
 
 """
     groupcount([by], iter)
 
 Determine the number of elements of `iter` belonging to each group.
 """
-groupcount(by, iter) = groupreduce(by, x->1, +, iter)
+groupcount(by::Callable, iter) = groupreduce(by, x->1, +, iter)
 groupcount(iter) = groupcount(identity, iter) # A handy extension of `unique`
 
 """
