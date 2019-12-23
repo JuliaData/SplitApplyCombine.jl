@@ -17,7 +17,7 @@ julia> mapmany(x -> 1:x, [1,2,3])
  3
 ```
 """
-function mapmany(f, a)
+function mapmany(f::Callable, a)
     T = eltype(promote_op(f, eltype(a)))
     out = T[]
     for x ∈ a
@@ -26,7 +26,7 @@ function mapmany(f, a)
     return out
 end
 
-mapmany(f, a, b, c...) = mapmany(x->f(x...), zip(a, b, c...))
+mapmany(f::Callable, a, b, c...) = mapmany(x->f(x...), zip(a, b, c...))
 
 """
     flatten(a)
@@ -107,8 +107,15 @@ julia> b
   -3
 ```
 """
-mapview(f, a) = MappedIterator(f, a)
-mapview(f, a::AbstractArray{T, N}) where {T, N} = MappedArray{promote_op(f, T), N, typeof(f), typeof(a)}(f, a)
+mapview(f::Callable, a) = MappedIterator(f, a)
+mapview(f::Callable, a::AbstractArray{T, N}) where {T, N} = MappedArray{promote_op(f, T), N, typeof(f), typeof(a)}(f, a)
+function mapview(f::Callable, d::AbstractDictionary)
+    I = keytype(d)
+    T = Core.Compiler.return_type(f, Tuple{eltype(d)})
+    
+    return MappedDictionary{I, T, typeof(f), Tuple{typeof(d)}}(f, (d,))
+end
 
 mapview(::typeof(identity), a) = a
 mapview(::typeof(identity), a::AbstractArray) = a
+mapview(::typeof(identity), d::AbstractDictionary) = d

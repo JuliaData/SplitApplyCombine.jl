@@ -1,18 +1,22 @@
 module SplitApplyCombine
 
-using Base: @propagate_inbounds, @pure, promote_op
+using Base: @propagate_inbounds, @pure, promote_op, Callable
 using Indexing
+using Dictionaries
 
-import Base: merge, merge!, size, IndexStyle, getindex, parent, axes, ht_keyindex2!, iterate
+import Base: merge, merge!, size, IndexStyle, getindex, parent, axes, iterate
 
 # collections -> scalar
-export single
+if VERSION < v"1.4.0-DEV"
+    export only
+    include("only.jl")
+end
 
 # collections -> collections
 export mapmany, mapview, MappedIterator, MappedArray, product, productview, ProductArray
 
 # collections -> collections of collections
-export group, groupinds, Groups, groupview, groupreduce, groupcount, groupsum, groupprod
+export group, groupfind, GroupDictionary, groupview, groupreduce, groupcount, groupsum, groupprod, groupunique, grouponly, groupfirst, grouplast
 export splitdims, splitdimsview, SplitDimsArray
 
 # colletions of collections -> collections
@@ -23,7 +27,9 @@ export combinedims, combinedimsview, CombineDimsArray
 export invert, invert! # a "transpose" for nested containers
 export innerjoin, ⨝, leftgroupjoin
 
-include("single.jl")
+@inline former(a, b) = a
+@inline latter(a, b) = b
+
 include("map.jl")
 include("group.jl")
 include("product.jl")
@@ -37,5 +43,10 @@ include("invert.jl")
 # ===================================
 # this should always work
 Base.haskey(a, i) = i ∈ keys(a) 
+
+if VERSION < v"1.2"
+    keytype(a::AbstractArray) = eltype(keys(a))
+    keytype(a) = Base.keytype(a)
+end
 
 end # module

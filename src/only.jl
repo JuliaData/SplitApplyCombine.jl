@@ -1,4 +1,4 @@
-function single(iter)
+function only(iter)
     i = iterate(iter)
     if i === nothing
         throw(ArgumentError("Collection must have exactly one element (input is empty)"))
@@ -11,12 +11,12 @@ function single(iter)
     end
 end
 
-function single(::Tuple{})
+function only(::Tuple{})
     throw(ArgumentError("Collection must have exactly one element (input is empty)"))
 end
-function single(t::Tuple{Any})
+function only(t::Tuple{Any})
     return t[1]
 end
-function single(::NTuple{N,Any}) where N
+function only(::NTuple{N,Any}) where N
     throw(ArgumentError("Collection must have exactly one element (input has $N elements)"))
 end

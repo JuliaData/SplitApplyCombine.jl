@@ -1,13 +1,19 @@
 authors = ["Andy Ferris <ferris.andy@gmail.com>"]
 name = "SplitApplyCombine"
 uuid = "03a91e81-4c3e-53e1-a0a4-9c0c8f19dd66"
-version = "0.3.1"
+version = "1.0.0"
 
 [deps]
 Indexing = "313cdc1a-70c2-5d6a-ae34-0150d3930a38"
+Dictionaries = "85a47980-9c8c-11e8-2b9f-f7ca1fa99fb4"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
 test = ["Test"]
+
+[compat]
+julia = "1"
+Indexing = "1.1"
+Dictionaries = "0.2"
