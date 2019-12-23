@@ -4,7 +4,7 @@ using Base: @propagate_inbounds, @pure, promote_op, Callable
 using Indexing
 using Dictionaries
 
-import Base: merge, merge!, size, IndexStyle, getindex, parent, axes, ht_keyindex2!, iterate
+import Base: merge, merge!, size, IndexStyle, getindex, parent, axes, iterate
 
 # collections -> scalar
 if VERSION < v"1.4.0-DEV"
@@ -43,5 +43,10 @@ include("invert.jl")
 # ===================================
 # this should always work
 Base.haskey(a, i) = i ∈ keys(a) 
+
+if VERSION < v"1.2"
+    keytype(a::AbstractArray) = eltype(keys(a))
+    keytype(a) = Base.keytype(a)
+end
 
 end # module
