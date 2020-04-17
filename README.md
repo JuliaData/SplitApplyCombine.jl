@@ -30,7 +30,7 @@ acceleration indexes but otherwise attempts to use a generic "native Julia" inte
 ## Quick start
 
 You can install the package by typing
-`Pkg.clone("https://github.com/JuliaData/SplitApplyCombine.jl")` at the REPL.
+`Pkg.add("SplitApplyCombine")` at the REPL.
 
 Below are some simple examples of how a select subset of the tools can be used to split,
 manipulate, and combine data. A complete API reference is included at the end of this
