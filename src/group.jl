@@ -84,8 +84,8 @@ function group(groups::AbstractDictionary, values::AbstractDictionary)
 
     if sharetokens(groups, values)
         @inbounds for token in tokens(groups)
-            group = gettoken(groups, value)
-            value = gettoken(values, groups)
+            group = gettokenvalue(groups, token)
+            value = gettokenvalue(values, token)
             push!(get!(Vector{T}, out, group), value)
         end
     else
