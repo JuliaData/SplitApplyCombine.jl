@@ -225,7 +225,7 @@ GetFielder(name::Symbol) = GetFielder{name}()
         exprs = [ :(map($(GetFielder(n)), a)) for n in names ]
         return :( NamedTuple{names}(tuple($(exprs...))) )
     else    
-        NamedTuple{names}(ntuple(i -> map(x -> getfield(x, names[i]), a), Val(n)))
+        NamedTuple{names}(ntuple(i -> map(x -> getfield(x, names[i]), a), Val(length(names))))
     end
 end
 

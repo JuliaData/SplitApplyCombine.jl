@@ -15,7 +15,7 @@ This operation shares some similarities with an SQL left outer join.
 
 ```jldoctest
 julia> leftgroupjoin(iseven, iseven, tuple, ==, [1,2,3,4], [0,1,2])
-HashDictionary{Bool,Array{Tuple{Int64,Int64},1}} with 2 entries:
+Dictionary{Bool,Array{Tuple{Int64,Int64},1}} with 2 entries:
   false │ Tuple{Int64,Int64}[(1, 1), (3, 1)]
   true  │ Tuple{Int64,Int64}[(2, 0), (2, 2), (4, 0), (4, 2)]
 ```
@@ -27,7 +27,7 @@ function leftgroupjoin(lkey::Callable, rkey::Callable, f::Callable, comparison::
     T = Core.Compiler.return_type(f, Tuple{eltype(left), eltype(right)})
     K = Core.Compiler.return_type(lkey, Tuple{eltype(left)})
     V = Vector{T}
-    out = HashDictionary{K, V}()
+    out = Dictionary{K, V}()
     for a ∈ left
         key = lkey(a)
         group = get!(V, out, key)
@@ -47,14 +47,14 @@ function leftgroupjoin(lkey::Callable, rkey::Callable, f::Callable, ::typeof(ise
     T = Core.Compiler.return_type(f, Tuple{eltype(left), eltype(right)})
     K = Core.Compiler.return_type(rkey, Tuple{eltype(right)})
     V = eltype(right)
-    dict = HashDictionary{K,Vector{V}}() # maybe a different stategy if right is unique
+    dict = Dictionary{K,Vector{V}}() # maybe a different stategy if right is unique
     for b ∈ right
         key = rkey(b)
         push!(get!(Vector{V}, dict, key), b)
     end
 
     K2 = Core.Compiler.return_type(lkey, Tuple{eltype(left)})
-    out = HashDictionary{K2, Vector{T}}()
+    out = Dictionary{K2, Vector{T}}()
     for a ∈ left
         key = lkey(a)
         token = gettoken(out, key)

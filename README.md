@@ -60,12 +60,12 @@ julia> combinedims([[1, 4], [2, 5], [3, 6]]) # flatten nested arrays
  [3, 6]
 
 julia> group(iseven, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) # split elements into groups
-2-element HashDictionary{Bool,Array{Int64,1}}
+2-element Dictionary{Bool,Array{Int64,1}}
  false │ [1, 3, 5, 7, 9]
   true │ [2, 4, 6, 8, 10]
 
 julia> groupreduce(iseven, +, 1:10) # like above, but performing reduction
-2-element HashDictionary{Bool,Int64}
+2-element Dictionary{Bool,Int64}
  false │ 25
   true │ 30
 
@@ -317,7 +317,7 @@ function which maps each element to a group key.
 ### `group([by = identity], [f = identity], iter)`
 
 Group the elements `x` of the iterable `iter` into groups labeled by `by(x)`, transforming
-each element . The default implementation creates a `Dictionaries.HashDictionary` of
+each element . The default implementation creates a `Dictionaries.Dictionary` of
 `Vector`s, but of course a table/dataframe package might extend this to return a suitable
 (nested) structure of tables/dataframes.
 
@@ -327,7 +327,7 @@ same length are provided.
 #### Examples:
 ```julia
 julia> group(iseven, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-2-element HashDictionary{Bool,Array{Int64,1}}
+2-element Dictionary{Bool,Array{Int64,1}}
  false │ [1, 3, 5, 7, 9]
   true │ [2, 4, 6, 8, 10]
 
@@ -342,10 +342,10 @@ julia> names = ["Andrew Smith", "John Smith", "Alice Baker", "Robert Baker",
  "Jason Bourne"
 
 julia> group(last, first, split.(names))
-3-element HashDictionary{SubString{String},Array{SubString{String},1}}
- "Bourne" │ SubString{String}["Jason"]
-  "Baker" │ SubString{String}["Alice", "Robert"]
+3-element Dictionary{SubString{String},Array{SubString{String},1}}
   "Smith" │ SubString{String}["Andrew", "John", "Jane"]
+  "Baker" │ SubString{String}["Alice", "Robert"]
+ "Bourne" │ SubString{String}["Jason"]
 ```
 
 ### `groupfind(by, container)`
@@ -358,7 +358,7 @@ For *indexable* collections `container`, returns the indices/keys associated wit
 
 ```julia
 julia> groupfind(iseven, [3,4,2,6,5,8])
-2-element HashDictionary{Bool,Array{Int64,1}}
+2-element Dictionary{Bool,Array{Int64,1}}
  false │ [1, 5]
   true │ [2, 3, 4, 6]
 
@@ -382,12 +382,14 @@ julia> v = [3,4,2,6,5,8]
  8
 
 julia> groups = groupview(iseven, v)
-SAC.Groups{Bool,Any,Array{Int64,1},Dict{Bool,Array{Int64,1}}} with 2 entries:
-  false => [3, 5]
-  true  => [4, 2, 6, 8]
+2-element GroupDictionary{Bool,SubArray{Int64,1,Array{Int64,1},Tuple{Array{Int64,1}},false},Array{Int64,1},Dictionary{Bool,Array{Int64,1}}}
+ false │ [3, 5]
+  true │ [4, 2, 6, 8]
 
-julia> groups[false][:] = 99
-99
+julia> groups[false][:] .= 99
+2-element view(::Array{Int64,1}, [1, 5]) with eltype Int64:
+ 99
+ 99
 
 julia> v
 6-element Array{Int64,1}:
@@ -412,12 +414,12 @@ the number of elements per group, their sum, and their product, respectively.
 #### Examples:
 ```julia
 julia> groupreduce(iseven, +, 1:10)
-HashDictionary{Bool,Int64} with 2 entries:
+Dictionary{Bool,Int64} with 2 entries:
   false │ 25
   true  │ 30
 
 julia> groupcount(iseven, 1:10)
-HashDictionary{Bool,Int64} with 2 entries:
+Dictionary{Bool,Int64} with 2 entries:
   false │ 5
   true  │ 5
 ```
@@ -457,7 +459,7 @@ LINQ's `GroupJoin`.
 
 ```julia
 julia> leftgroupjoin(iseven, iseven, tuple, ==, [1,2,3,4], [0,1,2])
-HashDictionary{Bool,Array{Tuple{Int64,Int64},1}} with 2 entries:
+Dictionary{Bool,Array{Tuple{Int64,Int64},1}} with 2 entries:
   false │ Tuple{Int64,Int64}[(1, 1), (3, 1)]
   true  │ Tuple{Int64,Int64}[(2, 0), (2, 2), (4, 0), (4, 2)]
 ```

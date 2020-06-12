@@ -12,12 +12,12 @@ function. If multiple collections (of the same length) are provided, the transfo
 
 ```jldoctest
 julia> group(iseven, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-HashDictionary{Bool,Array{Int64,1}} with 2 entries:
+Dictionary{Bool,Array{Int64,1}} with 2 entries:
  false │ [1, 3, 5, 7, 9]
  true  │ [2, 4, 6, 8, 10]
 
 julia> group(iseven, x -> x ÷ 2, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-HashDictionary{Bool,Array{Int64,1}} with 2 entries:
+Dictionary{Bool,Array{Int64,1}} with 2 entries:
  false │ [0, 1, 2, 3, 4]
  true  │ [1, 2, 3, 4, 5]
 ```
@@ -41,16 +41,16 @@ matching element from `groups`.
 
 ```julia
 julia> group([true,false,true,false,true], [1,2,3,4,5])
-2-element HashDictionary{Bool,Array{Int64,1}}
- false │ [2, 4]
+2-element Dictionary{Bool,Array{Int64,1}}
   true │ [1, 3, 5]
+ false │ [2, 4]
 ```
 """
 function group(groups, values)
     I = eltype(groups)
     T = eltype(values)
 
-    out = HashDictionary{I, Vector{T}}()
+    out = Dictionary{I, Vector{T}}()
     @inbounds for (group, value) in zip(groups, values)
         push!(get!(Vector{T}, out, group), value)
     end
@@ -66,7 +66,7 @@ function group(groups::AbstractArray, values::AbstractArray)
         throw(DimensionMismatch("dimensions must match"))
     end
 
-    out = HashDictionary{I, Vector{T}}()
+    out = Dictionary{I, Vector{T}}()
     @inbounds for i in keys(groups)
         group = groups[i]
         value = values[i]
@@ -80,7 +80,7 @@ function group(groups::AbstractDictionary, values::AbstractDictionary)
     I = eltype(groups)
     T = eltype(values)
 
-    out = HashDictionary{I, Vector{T}}()
+    out = Dictionary{I, Vector{T}}()
 
     if sharetokens(groups, values)
         @inbounds for token in tokens(groups)
@@ -130,7 +130,7 @@ function groupreduce(op::Callable, groups, values; kw...)
         throw(ArgumentError("groupreduce doesn't support these keyword arguments: $(setdiff(keys(nt), (:init,)))"))
     end
 
-    out = HashDictionary{I, T}()
+    out = Dictionary{I, T}()
     @inbounds for (group, value) in zip(groups, values)
         (hadtoken, token) = gettoken!(out, group)
         if hadtoken
@@ -201,7 +201,7 @@ Return a dictionary mapping the unique elements `x` of iter grouped by `by(x)` w
 `f(x)`, where `by` and `f` default to the identity function.
 
 This is an optimized equivalent of `only.(group(by, f, iter))` and is similar to
-`HashDictionary(by.(iter), f.(iter))`
+`Dictionary(by.(iter), f.(iter))`
 """
 grouponly(iter) = grouponly(identity, iter)
 
@@ -214,7 +214,7 @@ grouponly(by::Callable, f::Callable, iter) = grouponly(mapview(by, iter), mapvie
 
 This is an optimized equivalent of `only.(group(groups, values))`.
 """
-grouponly(groups, values) = HashDictionary(groups, values)
+grouponly(groups, values) = Dictionary(groups, values)
 # should make this more generic... if `groups` is an `AbstractIndices` we can use `similar`
 # to generate the output...
 
@@ -231,7 +231,7 @@ of distinct values (rather than an `AbstractArray` with possibly repeated values
 
 ```julia
 julia> groupunique(iseven, [1,2,1,2,3])
-2-element HashDictionary{Bool,HashIndices{Int64}}
+2-element Dictionary{Bool,Indices{Int64}}
  false │ {2}
   true │ {1, 3}
 ```
@@ -251,18 +251,18 @@ a dictinary of sets.
 
 ```julia
 julia> groupunique([true,false,true,false,true], [1,2,1,2,3])
-2-element HashDictionary{Bool,HashIndices{Int64}}
- false │ {2}
+2-element Dictionary{Bool,Indices{Int64}}
   true │ {1, 3}
+ false │ {2}
 ```
 """
 function groupunique(groups, values)
     I = eltype(groups)
     T = eltype(values)
 
-    out = HashDictionary{I, HashIndices{T}}()
+    out = Dictionary{I, Indices{T}}()
     for (group, value) in zip(groups, values)
-        grouping = get!(HashIndices{T}, out, group)
+        grouping = get!(Indices{T}, out, group)
         set!(grouping, value)
     end
 
@@ -280,10 +280,10 @@ default value of `by` is `identity`.
 # Example
 
 ```jldoctest
-julia> groupinds(iseven, [3,4,2,6,5,8])
-Dict{Bool,Array{Int64,1}} with 2 entries:
-  false => [1, 5]
-  true  => [2, 3, 4, 6]
+julia> groupfind(iseven, [3,4,2,6,5,8])
+2-element Dictionary{Bool,Array{Int64,1}}
+ false │ [1, 5]
+  true │ [2, 3, 4, 6]
 ```
 """
 groupfind(by::Callable, container) = groupfind(mapview(by, container))
@@ -292,7 +292,7 @@ function groupfind(container)
     I = eltype(container)
     T = keytype(container)
 
-    out = HashDictionary{I, Vector{T}}()
+    out = Dictionary{I, Vector{T}}()
     @inbounds for i in keys(container)
         tmp = get!(Vector{T}, out, container[i])
         push!(tmp, i)
@@ -304,7 +304,7 @@ function groupfind(inds::AbstractIndices)
     I = eltype(inds)
     T = keytype(inds)
 
-    out = HashDictionary{I, Vector{T}}()
+    out = Dictionary{I, Vector{T}}()
     for i in inds
         tmp = get!(Vector{T}, out, i)
         push!(tmp, i)
@@ -317,7 +317,7 @@ function groupfind(dict::AbstractDictionary)
     T = keytype(dict)
 
     inds = keys(dict)
-    out = HashDictionary{I, Vector{T}}()
+    out = Dictionary{I, Vector{T}}()
     @inbounds if istokenizable(dict)
         for t in tokens(dict)
             tmp = get!(Vector{T}, out, gettokenvalue(dict, t))
@@ -373,7 +373,7 @@ julia> v = [3,4,2,6,5,8]
  8
 
 julia> groups = groupview(iseven, v)
-2-element SplitApplyCombine.GroupDictionary{Bool,SubArray{Int64,1,Array{Int64,1},Tuple{Array{Int64,1}},false},Array{Int64,1},HashDictionary{Bool,Array{Int64,1}}}
+2-element GroupDictionary{Bool,SubArray{Int64,1,Array{Int64,1},Tuple{Array{Int64,1}},false},Array{Int64,1},Dictionary{Bool,Array{Int64,1}}}
  false │ [3, 5]
   true │ [4, 2, 6, 8]
 
