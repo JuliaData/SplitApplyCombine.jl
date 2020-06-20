@@ -338,20 +338,21 @@ struct GroupDictionary{I, T, Parent, Inds <: AbstractDictionary{I}} <: AbstractD
     inds::Inds
 end
 
-Base.parent(g::GroupDictionary) = g.parent
-Base.keys(g::GroupDictionary) = keys(g.inds)
+Base.parent(g::GroupDictionary) = getfield(g, :parent)
+_inds(g::GroupDictionary) = getfield(g, :inds)
+Base.keys(g::GroupDictionary) = keys(_inds(g))
 
-Base.isassigned(g::GroupDictionary{I}, k::I) where {I} = isassigned(g.inds, k)
+Base.isassigned(g::GroupDictionary{I}, k::I) where {I} = isassigned(_inds(g), k)
 Base.@propagate_inbounds function Base.getindex(g::GroupDictionary{I}, i::I) where {I}
-    inds = g.inds[i]
+    inds = _inds(g)[i]
     return view(parent(g), inds)
 end
 
-Dictionaries.tokentype(g::GroupDictionary) = tokentype(g.inds)
-@propagate_inbounds Dictionaries.gettoken(g::GroupDictionary{I}, i::I) where {I} = gettoken(g.inds, i)
-Dictionaries.istokenassigned(g::GroupDictionary, t) = istokenassigned(g.inds, t)
+Dictionaries.tokentype(g::GroupDictionary) = tokentype(_inds(g))
+@propagate_inbounds Dictionaries.gettoken(g::GroupDictionary{I}, i::I) where {I} = gettoken(_inds(g), i)
+Dictionaries.istokenassigned(g::GroupDictionary, t) = istokenassigned(_inds(g), t)
 @propagate_inbounds function Dictionaries.gettokenvalue(g::GroupDictionary, t)
-    inds = gettokenvalue(g.inds, t)
+    inds = gettokenvalue(_inds(g), t)
     return view(parent(g), inds)
 end
 
