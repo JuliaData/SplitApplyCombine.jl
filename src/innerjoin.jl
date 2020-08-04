@@ -51,23 +51,44 @@ end
 function innerjoin!(out, lkey::Callable, rkey::Callable, f::Callable, ::typeof(isequal), left, right)
     # isequal heralds a hash-based approach, roughly O(length(left) * log(length(right)))
 
-    K = promote_op(rkey, eltype(right))
-    V = eltype(right)
-    dict = Dict{K,Vector{V}}() # maybe a different stategy if right is unique
-    for b ∈ right
-        key = rkey(b)
-        push!(get!(()->Vector{V}(), dict, key), b)
-    end
+    if Base.IteratorSize(left) === Base.SizeUnknown() || Base.IteratorSize(right) === Base.SizeUnknown() || length(right) <= length(left)
+        K = promote_op(rkey, eltype(right))
+        V = eltype(right)
+        dict = Dict{K,Vector{V}}() # maybe a different stategy if right is unique?
+        for b ∈ right
+            key = rkey(b)
+            push!(get!(Vector{V}, dict, key), b)
+        end
 
-    for a ∈ left
-        key = lkey(a)
-        dict_index = Base.ht_keyindex(dict, key)
-        if dict_index > 0 # -1 if key not found
-            for b ∈ dict.vals[dict_index]
-                push!(out, f(a, b))
+        @inbounds for a ∈ left
+            key = lkey(a)
+            dict_index = Base.ht_keyindex(dict, key)
+            if dict_index > 0 # -1 if key not found
+                for b ∈ dict.vals[dict_index]
+                    push!(out, f(a, b))
+                end
+            end
+        end
+    else
+        K = promote_op(lkey, eltype(left))
+        V = eltype(left)
+        dict = Dict{K,Vector{V}}() # maybe a different stategy if left is unique?
+        for a ∈ left
+            key = lkey(a)
+            push!(get!(Vector{V}, dict, key), a)
+        end
+
+        @inbounds for b ∈ right
+            key = rkey(b)
+            dict_index = Base.ht_keyindex(dict, key)
+            if dict_index > 0 # -1 if key not found
+                for a ∈ dict.vals[dict_index]
+                    push!(out, f(a, b))
+                end
             end
         end
     end
+
     return out
 end
 
@@ -105,19 +126,38 @@ function _innerjoin!(out, l::AbstractArray, r::AbstractArray, v::AbstractArray, 
         throw(DimensionMismatch("innerjoin arrays do not have matching dimensions"))
     end
 
-    rkeys = keys(r)
-    V = eltype(rkeys)
-    dict = Dict{eltype(r), Vector{V}}()
-    @inbounds for i_r ∈ rkeys
-        push!(get!(Vector{V}, dict, r[i_r]), i_r)
-    end
+    if length(r) <= length(l)
+        rkeys = keys(r)
+        V = eltype(rkeys)
+        dict = Dict{eltype(r), Vector{V}}()
+        @inbounds for i_r ∈ rkeys
+            push!(get!(Vector{V}, dict, r[i_r]), i_r)
+        end
 
-    @inbounds for i_l in keys(l)
-        l_value = l[i_l]
-        dict_index = Base.ht_keyindex(dict, l_value)
-        if dict_index > 0 # -1 if key not found
-            for i_r ∈ dict.vals[dict_index]
-                push!(out, v[_tuple(i_l)..., _tuple(i_r)...])
+        @inbounds for i_l in keys(l)
+            l_value = l[i_l]
+            dict_index = Base.ht_keyindex(dict, l_value)
+            if dict_index > 0 # -1 if key not found
+                for i_r ∈ dict.vals[dict_index]
+                    push!(out, v[_tuple(i_l)..., _tuple(i_r)...])
+                end
+            end
+        end
+    else
+        lkeys = keys(l)
+        V = eltype(lkeys)
+        dict = Dict{eltype(l), Vector{V}}()
+        @inbounds for i_l ∈ lkeys
+            push!(get!(Vector{V}, dict, l[i_l]), i_l)
+        end
+
+        @inbounds for i_r in keys(r)
+            r_value = r[i_r]
+            dict_index = Base.ht_keyindex(dict, r_value)
+            if dict_index > 0 # -1 if key not found
+                for i_l ∈ dict.vals[dict_index]
+                    push!(out, v[_tuple(i_l)..., _tuple(i_r)...])
+                end
             end
         end
     end
