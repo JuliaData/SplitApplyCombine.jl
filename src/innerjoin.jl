@@ -109,7 +109,7 @@ function _innerjoin!(out, l::AbstractArray, r::AbstractArray, v::AbstractArray, 
     V = eltype(rkeys)
     dict = Dict{eltype(r), Vector{V}}()
     @inbounds for i_r ∈ rkeys
-        push!(get!(()->Vector{V}(), dict, r[i_r]), i_r)
+        push!(get!(Vector{V}, dict, r[i_r]), i_r)
     end
 
     @inbounds for i_l in keys(l)
@@ -117,13 +117,16 @@ function _innerjoin!(out, l::AbstractArray, r::AbstractArray, v::AbstractArray, 
         dict_index = Base.ht_keyindex(dict, l_value)
         if dict_index > 0 # -1 if key not found
             for i_r ∈ dict.vals[dict_index]
-                push!(out, v[Tuple(i_l)..., Tuple(i_r)...])
+                push!(out, v[_tuple(i_l)..., _tuple(i_r)...])
             end
         end
     end
 
     return out
 end
+
+_tuple(i::Integer) = (i,)
+_tuple(i::Any) = Tuple(i)
 
 
 # TODO more specialized methods for comparisons: ==, <, isless, etc - via sorting strategies
