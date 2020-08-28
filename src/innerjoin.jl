@@ -146,9 +146,20 @@ function _innerjoin!(out, l::AbstractArray, r::AbstractArray, v::AbstractArray, 
     else
         lkeys = keys(l)
         V = eltype(lkeys)
-        dict = Dict{eltype(l), Vector{V}}()
+        # For bitstypes i_l::V we can avoid allocating a vector by storing
+        # i_l directly in the Dict until a second matching i_l comes along
+        dict = Dict{eltype(l), Union{V,Vector{V}}}()
         @inbounds for i_l ∈ lkeys
-            push!(get!(Vector{V}, dict, l[i_l]), i_l)
+            dict_index = Base.ht_keyindex2!(dict, l[i_l])
+            if dict_index > 0
+                old = dict.vals[dict_index]
+                new = old isa V ? [old, i_l] : push!(old, new)
+                dict.age += 1
+                dict.keys[dict_index] = l[i_l]
+                dict.vals[dict_index] = new
+            else
+                Base._setindex!(dict, i_l, l[i_l], -dict_index)
+            end
         end
 
         @inbounds for i_r in keys(r)
