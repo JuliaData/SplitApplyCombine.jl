@@ -1,9 +1,13 @@
 # Split, apply, combine
 
-*Strategies for nested data in Julia*
+[![CI](https://github.com/JuliaData/SplitApplyCombine.jl/workflows/CI/badge.svg)](https://github.com/JuliaData/SplitApplyCombine.jl/actions?query=workflow%3ACI)
+[![codecov](https://codecov.io/gh/JuliaData/SplitApplyCombine.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/JuliaData/SplitApplyCombine.jl)
+[![deps](https://juliahub.com/docs/SplitApplyCombine/deps.svg)](https://juliahub.com/ui/Packages/SplitApplyCombine/vbX6o?t=2)
+[![version](https://juliahub.com/docs/SplitApplyCombine/version.svg)](https://juliahub.com/ui/Packages/SplitApplyCombine/vbX6o)
+[![pkgeval](https://juliahub.com/docs/SplitApplyCombine/pkgeval.svg)](https://juliahub.com/ui/Packages/SplitApplyCombine/vbX6o)
 
-[![Build Status](https://travis-ci.org/JuliaData/SplitApplyCombine.jl.svg?branch=master)](https://travis-ci.org/JuliaData/SplitApplyCombine.jl)
-[![codecov.io](http://codecov.io/github/JuliaData/SplitApplyCombine.jl/coverage.svg?branch=master)](http://codecov.io/github/JuliaData/SplitApplyCombine.jl?branch=master)
+
+*Strategies for nested data in Julia*
 
 *SplitApplyCombine.jl* provides high-level, generic tools for manipulating data -
 particularly focussing on data in nested containers. An emphasis is placed on ensuring
