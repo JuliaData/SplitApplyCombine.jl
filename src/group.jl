@@ -47,8 +47,8 @@ julia> group([true,false,true,false,true], [1,2,3,4,5])
 ```
 """
 function group(groups, values)
-    I = eltype(groups)
-    T = eltype(values)
+    I = eltype(groups) # TODO EltypeUnknown
+    T = eltype(values) # TODO EltypeUnknown
 
     out = Dictionary{I, Vector{T}}()
     @inbounds for (group, value) in zip(groups, values)
@@ -58,19 +58,20 @@ function group(groups, values)
     return out
 end
 
-function group(groups::AbstractArray, values::AbstractArray)
-    I = eltype(groups) # TODO EltypeUnknown
-    T = eltype(values) # TODO EltypeUnknown
+function group(groups::AbstractVector, values::AbstractVector)
+    I = eltype(groups)
+    T = eltype(values)
 
     if keys(groups) != keys(values)
         throw(DimensionMismatch("dimensions must match"))
     end
 
-    out = Dictionary{I, Vector{T}}()
+    VT = Core.Compiler.return_type(Base.emptymutable, Tuple{typeof(values)})
+    out = Dictionary{I, VT}()
     @inbounds for i in keys(groups)
         group = groups[i]
         value = values[i]
-        push!(get!(Vector{T}, out, group), value)
+        push!(get!(() -> Base.emptymutable(values), out, group), value)
     end
 
     return out
