@@ -110,7 +110,7 @@ that may be extended and built upon by other packages.
 ## Notes
 
 This package recently switched from using the dictionaries in `Base` to those in the
-[*Dictionaries.jl*][https://github.com/andyferris/Dictionaries.jl] package, particularly
+[*Dictionaries.jl*](https://github.com/andyferris/Dictionaries.jl) package, particularly
 for the `group` family of functions.
 
 # API reference
