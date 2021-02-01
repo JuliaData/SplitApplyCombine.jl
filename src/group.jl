@@ -271,6 +271,42 @@ end
 
 @deprecate groupinds groupfind
 
+function groupfind2(array::AbstractArray)
+    # In a single pass we collect the size of each group and the token to which group each element belongs
+    group_sizes = Dictionary{eltype(array), Int}()
+    to_group_token = similar(array, Int)
+
+    @inbounds for i in eachindex(array)
+        value = array[i]
+        (hadindex, token) = gettoken!(group_sizes, value)
+        dict_index = token[2]
+        if hadindex
+            settokenvalue!(group_sizes, token, gettokenvalue(group_sizes, token) + 1)
+        else
+            settokenvalue!(group_sizes, token, 1)
+        end
+        to_group_token[i] = dict_index # Insertion-only, the token is stable...
+    end
+
+    # We find the sort permutation and the ranges of the sort permutation for each group
+    sorted_indices = sortperm(to_group_token)
+
+    this_start = 1
+    this_stop = 0
+    ranges = similar(group_sizes, UnitRange{Int})
+    @inbounds for token in tokens(group_sizes)
+        this_size = gettokenvalue(group_sizes, token)
+        this_stop += this_size
+        settokenvalue!(ranges, token, this_start:this_stop)
+        this_start += this_size
+    end
+
+    # We lazily index these ranges onto sorted_indices
+    return mapview((r -> @inbounds(view(sorted_indices, r))), ranges)
+end
+
+
+
 """
     groupfind([by], container)
 
