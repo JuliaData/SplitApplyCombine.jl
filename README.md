@@ -453,7 +453,7 @@ julia> innerjoin(iseven, iseven, tuple, ==, [1,2,3,4], [0,1,2])
 ### `leftgroupjoin([lkey = identity], [rkey = identity], [f = tuple], [comparison = isequal], left, right)`
 
 Creates a collection if groups labelled by `lkey(l)` where each group contains elements
-`f(l, r)` which satisfy `comparison(lkey(l), rkey(r))`. If there rae no matches, the group
+`f(l, r)` which satisfy `comparison(lkey(l), rkey(r))`. If there are no matches, the group
 is still created (with an empty collection).
 
 This operation shares similarities with an SQL left outer join, but is more similar to
