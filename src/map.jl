@@ -107,9 +107,9 @@ julia> b
   -3
 ```
 """
-mapview(f::Callable, a) = MappedIterator(f, a)
-mapview(f::Callable, a::AbstractArray{T, N}) where {T, N} = MappedArray{promote_op(f, T), N, typeof(f), typeof(a)}(f, a)
-function mapview(f::Callable, d::AbstractDictionary)
+mapview(f, a) = MappedIterator(f, a)
+mapview(f, a::AbstractArray{T, N}) where {T, N} = MappedArray{promote_op(f, T), N, typeof(f), typeof(a)}(f, a)
+function mapview(f, d::AbstractDictionary)
     I = keytype(d)
     T = Core.Compiler.return_type(f, Tuple{eltype(d)})
     
