@@ -73,6 +73,7 @@ end
 end
 
 @generated function slice_inds(i::CartesianIndex, ::Val{dims}, ::Val{n}) where {dims, n}
+    @assert length(i) == length(dims)
     out = []
     for j in 1:n
         k = findfirst(==(j), dims)
@@ -96,7 +97,7 @@ Base.parent(a::SplitDimsArray) = a.parent
 axes(a::SplitDimsArray{T, N, Dims}) where {T, N, Dims} = getindices(axes(parent(a)), Dims)
 size(a::SplitDimsArray{T, N, Dims}) where {T, N, Dims} = getindices(size(parent(a)), Dims)
 Base.IndexStyle(::SplitDimsArray) = Base.IndexCartesian()
-@propagate_inbounds function Base.getindex(a::SplitDimsArray{T, N, Dims}, i::Int...) where {T, N, Dims}
+@propagate_inbounds function Base.getindex(a::SplitDimsArray{T, N, Dims}, i::Vararg{Int, N}) where {T, N, Dims}
     return view(parent(a), slice_inds(CartesianIndex(i), Val(Dims), Val(ndims(parent(a))))...)
 end
 
