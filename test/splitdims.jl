@@ -34,12 +34,21 @@ end
     @test splitdimsview([1 2; 3 4], (1, 2)) == tmp
     tmp[1,2][] = 3; tmp[2,1][] = 2
     @test splitdimsview([1 2; 3 4], (2, 1)) == tmp
+    # indexing
+    @test splitdimsview([1 2; 3 4], (1, 2))[2, 1] == fill(3)
+    @test splitdimsview([1 2; 3 4], (1, 2))[2] == fill(3)
+    @test splitdimsview([1 2; 3 4], (1, 2))[CartesianIndex(2)] == fill(3)
 
     # Vector
     @test splitdimsview([1,2,3]) == [fill(1, ()), fill(2, ()), fill(3, ())]
     @test splitdimsview([1,2,3], (1,)) == [fill(1, ()), fill(2, ()), fill(3, ())]
     @test splitdimsview([1,2,3], ()) == fill([1,2,3], ())
+    # indexing
+    @test splitdimsview([1,2,3], (1,))[2] == fill(2)
+    @test splitdimsview([1,2,3], (1,))[CartesianIndex(2)] == fill(2)
 
     # Array{0}
     @test splitdimsview(fill(1, ())) == fill(fill(1, ()), ())
+    # indexing
+    @test splitdimsview(fill(1, ()))[] == fill(1)
 end
