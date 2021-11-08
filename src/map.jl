@@ -119,3 +119,10 @@ end
 mapview(::typeof(identity), a) = a
 mapview(::typeof(identity), a::AbstractArray) = a
 mapview(::typeof(identity), d::AbstractDictionary) = d
+
+"""
+    filterview(f, a)
+
+Return a view of an array `a` without elements for which `f` is `false`. Similar to `filter(f, a)`, except returns a view instead of a copy.
+"""
+filterview(f, a::AbstractArray) = @view a[findall(f, a)]

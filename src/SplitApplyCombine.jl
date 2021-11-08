@@ -3,6 +3,7 @@ module SplitApplyCombine
 using Base: @propagate_inbounds, @pure, promote_op, Callable
 using Indexing
 using Dictionaries
+import Dictionaries: filterview
 
 import Base: merge, merge!, size, IndexStyle, getindex, parent, axes, iterate
 
@@ -13,7 +14,7 @@ if VERSION < v"1.4.0-DEV"
 end
 
 # collections -> collections
-export mapmany, mapview, MappedIterator, MappedArray, product, productview, ProductArray
+export mapmany, mapview, MappedIterator, MappedArray, product, productview, ProductArray, filterview
 
 # collections -> collections of collections
 export group, groupfind, GroupDictionary, groupview, groupreduce, groupcount, groupsum, groupprod, groupunique, grouponly, groupfirst, grouplast
