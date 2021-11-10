@@ -116,7 +116,7 @@ for the `group` family of functions.
 # API reference
 
 The package currently implements and exports `only`, `splitdims`, `splitdimsview`,
-`combinedims`, `combinedimsview`, `mapmany`, `flatten`, `group`, `groupinds`, `groupview`,
+`combinedims`, `combinedimsview`, `mapview`, `filterview`, `mapmany`, `flatten`, `group`, `groupinds`, `groupview`,
 `groupreduce`, `innerjoin` and `leftgroupjoin`, as well as the `@_` macro. Expect this list
 to grow.
 
@@ -240,6 +240,34 @@ julia> b
   true
   true
  false
+```
+
+### `filterview(f, arr)`
+
+Like `filter`, but presents a view of the data contained in `arr`. Data in `arr` is not copied, and modifications to the resulting view are propagated to the original array.
+
+#### Example:
+
+```julia
+julia> a = [1, 2, 3];
+
+julia> b = filterview(isodd, a)
+2-element view(::Vector{Int64}, [1, 3]) with eltype Int64:
+ 1
+ 3
+
+julia> b[2] = 10;
+
+julia> a
+3-element Vector{Int64}:
+  1
+  2
+ 10
+
+julia> b
+2-element view(::Vector{Int64}, [1, 3]) with eltype Int64:
+  1
+ 10
 ```
 
 ### `mapmany(f, iters...)`
