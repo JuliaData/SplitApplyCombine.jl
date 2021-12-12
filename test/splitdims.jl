@@ -51,4 +51,8 @@ end
     @test splitdimsview(fill(1, ())) == fill(fill(1, ()), ())
     # indexing
     @test splitdimsview(fill(1, ()))[] == fill(1)
+
+    A = [1 2 3; 4 5 6]
+    splitdimsview(A)[1][2] = 100
+    @test A[2, 1] == 100
 end
