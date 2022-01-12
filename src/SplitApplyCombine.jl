@@ -41,9 +41,12 @@ include("combinedims.jl")
 include("invert.jl")
 
 # Silly definitions missing from Base
+# (defining them here is piracy)
 # ===================================
-# this should always work
-Base.haskey(a, i) = i ∈ keys(a) 
+
+if !hasmethod(Base.haskey, (Any, Any))
+    Base.haskey(a, i) = i ∈ keys(a)
+end
 
 if VERSION < v"1.2"
     keytype(a::AbstractArray) = eltype(keys(a))
