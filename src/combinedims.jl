@@ -16,9 +16,9 @@ julia> combinedims([[1, 2], [3, 4]])
  2  4
 ```
 """
-combinedims(a::AbstractArray{<:AbstractArray{<:Any, N}, M}) where {N,M} = combinedims(a, ntuple(i -> N + i, M))
-combinedims(a::AbstractArray{<:AbstractArray{<:Any, N}, 1}, outerdim::Int) where {N} = combinedims(a, (outerdim,))
-combinedims(a::AbstractArray{<:AbstractArray{<:Any, N}, M}, outerdims::NTuple{M, Int}) where {N, M} = _combinedims(a, Val(outerdims))
+@inline combinedims(a::AbstractArray{<:AbstractArray{<:Any, N}, M}) where {N,M} = combinedims(a, ntuple(i -> N + i, M))
+@inline combinedims(a::AbstractArray{<:AbstractArray{<:Any, N}, 1}, outerdim::Int) where {N} = _combinedims(a, Val((outerdim,)))
+@inline combinedims(a::AbstractArray{<:AbstractArray{<:Any, N}, M}, outerdims::NTuple{M, Int}) where {N, M} = _combinedims(a, Val(outerdims))
 
 function _combinedims(a::AbstractArray, ::Val{outer_dims}) where {outer_dims}
     outeraxes = axes(a)

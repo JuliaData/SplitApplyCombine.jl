@@ -1,5 +1,6 @@
 using SplitApplyCombine
 using Dictionaries
+using StaticArrays
 using Test
 
 include("only.jl")
