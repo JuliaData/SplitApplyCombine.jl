@@ -122,7 +122,7 @@ end
 
 function groupreduce(op::Callable, groups, values; kw...)
     I = eltype(groups)
-    nt = kw.data
+    nt = Base.values(kw)
     if nt isa NamedTuple{()}
         T = eltype(values)
     elseif nt isa NamedTuple{(:init,)}
