@@ -17,8 +17,11 @@
         A = rand(2, 3, 5, 7)
         @test @inferred(combine(splitdims(A))) == A
         @testset for d in [1:ndims(A); (1, 2); (1, 3); (2, 3); (2, 4); (1, 2, 3); (1, 2, 4); (2, 3, 4); (1, 2, 3, 4)]
-            @test @inferred(combine(splitdims(A, d), d)) == A
-            @test @inferred(combine(splitdims(A, d), d)[1, 2, 3, 4]) == A[1, 2, 3, 4]
+            B = @inferred combine(splitdims(A, d), d)
+            @test B == A
+            @test @inferred(B[1, 2, 3, 4]) == A[1, 2, 3, 4]
+
+            sum(B); @test @allocated(sum(B)) <= 16  # actually zero allocations, but @allocated always returns at least 16 bytes in this context
         end
     end
 
