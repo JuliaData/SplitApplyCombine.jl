@@ -52,7 +52,8 @@ function group(groups, values)
 
     out = Dictionary{I, Vector{T}}()
     @inbounds for (group, value) in zip(groups, values)
-        push!(get!(Vector{T}, out, group), value)
+        tmp = get!(() -> T[value], out, group)
+        last(tmp) == value || push!(tmp, value)
     end
 
     return out
@@ -295,8 +296,8 @@ function groupfind(container)
 
     out = Dictionary{I, Vector{T}}()
     @inbounds for i in keys(container)
-        tmp = get!(Vector{T}, out, container[i])
-        push!(tmp, i)
+        tmp = get!(() -> T[i], out, container[i])
+        last(tmp) == i || push!(tmp, i)
     end
     return out
 end
@@ -307,8 +308,8 @@ function groupfind(inds::AbstractIndices)
 
     out = Dictionary{I, Vector{T}}()
     for i in inds
-        tmp = get!(Vector{T}, out, i)
-        push!(tmp, i)
+        tmp = get!(() -> T[i], out, container[i])
+        last(tmp) == i || push!(tmp, i)
     end
     return out
 end

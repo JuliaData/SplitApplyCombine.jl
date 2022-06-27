@@ -5,6 +5,8 @@
     @test group(iseven, x -> x*2, 1:10)::Dictionary == dictionary([false => [2,6,10,14,18], true => [4,8,12,16,20]])
 
     @test group((x,y) -> iseven(x+y), (x,y) -> x, 1:10, [1,3,4,2,5,6,4,2,3,9])::Dictionary == dictionary([true => [1,4,5,6,8,9], false => [2,3,7,10]])
+
+    @test group(isnothing, [1, 2, 3, nothing, 4, 5, nothing])::Dictionary == dictionary([false => [1, 2, 3, 4, 5], true => [nothing, nothing]])
 end
 
 @testset "grouponly" begin
