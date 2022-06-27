@@ -30,4 +30,15 @@
     vv[1][3] = 100
     @test c_copy[3, 1] == 3
     @test c_view[3, 1] == 100
+
+    stat = [SVector(1, 2), SVector(3, 4), SVector(5, 6)]
+    @test @inferred(combinedims(stat)) == [1 3 5; 2 4 6]
+    # infer to a union:
+    @test combinedims(stat, 1) == [1 2; 3 4; 5 6]
+    @test combinedims(stat, 2) == [1 3 5; 2 4 6]
+    @testset for ds in [(), (1,), (2,)]
+        cv = @inferred(combinedimsview(stat, ds...))
+        @inferred(size(cv))
+        @inferred(cv[1, 2])
+    end
 end

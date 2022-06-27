@@ -9,11 +9,13 @@ Dictionaries = "85a47980-9c8c-11e8-2b9f-f7ca1fa99fb4"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [targets]
-test = ["Test"]
+test = ["Test", "StaticArrays"]
 
 [compat]
 julia = "1"
 Indexing = "1.1"
 Dictionaries = "0.3"
+StaticArrays = "1"
