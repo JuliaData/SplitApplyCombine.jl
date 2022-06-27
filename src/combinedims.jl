@@ -64,7 +64,7 @@ Base.parent(a::CombineDimsArray) = a.parent
     # filter(∉(dims_outer(a)), ntuple(identity, N))
     i = Ref(0)
     ntuple(N - Nout) do _
-        i[] = findnext(∉(dims_outer(a)), 1:N, i[] + 1)
+        i[] = findnext(∉(dims_outer(a)), 1:N, i[] + 1)::Int  # ::Int annotation for type stability: we know that the result isn't nothing
     end
 end
 
