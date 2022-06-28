@@ -77,6 +77,12 @@ Base.IndexStyle(::CombineDimsArray) = Base.IndexCartesian()
     return parent(a)[outer_inds...][inner_inds...]
 end
 
+@propagate_inbounds function Base.setindex!(a::CombineDimsArray{T, N}, val, i::Vararg{Int, N}) where {T, N}
+    outer_inds = getindices(i, dims_outer(a))
+    inner_inds = getindices(i, dims_inner(a))
+    parent(a)[outer_inds...][inner_inds...] = val
+end
+
 """
     combinedimsview(array_of_arrays)
 
