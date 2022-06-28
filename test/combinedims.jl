@@ -21,7 +21,7 @@
             @test B == A
             @test @inferred(B[1, 2, 3, 4]) == A[1, 2, 3, 4]
 
-            sum(B); @test @allocated(sum(B)) <= 16  # actually zero allocations, but @allocated always returns at least 16 bytes in this context
+            sum(B); @test @allocated(sum(B)) <= 16  # @btime shows zero allocations, but @allocated always returns at least 16 bytes in this context
         end
     end
 
@@ -30,6 +30,12 @@
     vv[1][3] = 100
     @test c_copy[3, 1] == 3
     @test c_view[3, 1] == 100
+    c_copy[3, 2] = 50
+    @test vv[2][3] == 7
+    c_view[3, 2] = 50
+    @test vv[2][3] == 50
+    c_view .= 0; @test @allocated(c_view .= 123) <= 64  # @btime shows zero allocations, but @allocated always returns at least 64 bytes in this context
+    @test all(v -> all(==(123), v), vv)
 
     stat = [SVector(1, 2), SVector(3, 4), SVector(5, 6)]
     @test @inferred(combinedims(stat)) == [1 3 5; 2 4 6]
