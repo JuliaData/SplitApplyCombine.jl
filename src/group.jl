@@ -52,8 +52,12 @@ function group(groups, values)
 
     out = Dictionary{I, Vector{T}}()
     @inbounds for (group, value) in zip(groups, values)
-        tmp = get!(() -> T[value], out, group)
-        last(tmp) == value || push!(tmp, value)
+        (hadtoken, token) = gettoken!(out, group)
+        if hadtoken
+            push!(gettokenvalue(out, token), value)
+        else
+            settokenvalue!(out, token, T[value])
+        end
     end
 
     return out
