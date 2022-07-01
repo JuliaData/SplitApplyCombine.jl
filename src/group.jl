@@ -63,7 +63,7 @@ function group(groups, values)
     return out
 end
 
-function group(groups::AbstractVector, values::AbstractVector)
+function group(groups::AbstractArray, values::AbstractArray)
     I = eltype(groups)
     T = eltype(values)
 
@@ -71,12 +71,17 @@ function group(groups::AbstractVector, values::AbstractVector)
         throw(DimensionMismatch("dimensions must match"))
     end
 
-    VT = Core.Compiler.return_type(Base.emptymutable, Tuple{typeof(values)})
+    VT = Core.Compiler.return_type(similar, Tuple{typeof(values), Int})
     out = Dictionary{I, VT}()
     @inbounds for i in keys(groups)
         group = groups[i]
         value = values[i]
-        push!(get!(() -> Base.emptymutable(values), out, group), value)
+        (hadtoken, token) = gettoken!(out, group)
+        if hadtoken
+            push!(gettokenvalue(out, token), value)
+        else
+            settokenvalue!(out, token, setindex!(similar(values, 1), value, 1))
+        end
     end
 
     return out
