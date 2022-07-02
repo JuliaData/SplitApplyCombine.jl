@@ -19,12 +19,18 @@ julia> mapmany(x -> 1:x, [1,2,3])
 """
 function mapmany(f::Callable, a)
     T = eltype(promote_op(f, eltype(a)))
-    out = T[]
-    for x ∈ a
+    afirst, state = iterate(a)
+    arest = Iterators.rest(a, state)
+    out = _similar_with_content(f(afirst), T)
+    for x ∈ arest
         append!(out, f(x))
     end
     return out
 end
+
+_similar_with_content(A::AbstractVector, ::Type{T}) where {T} = similar(A, T) .= A
+_similar_with_content(A::AbstractArray, ::Type{T}) where {T} = _similar_with_content(vec(A), T)
+_similar_with_content(A, ::Type{T}) where {T} = append!(T[], A)
 
 mapmany(f::Callable, a, b, c...) = mapmany(x->f(x...), zip(a, b, c...))
 
