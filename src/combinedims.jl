@@ -30,7 +30,7 @@ function _combinedims(a::AbstractArray, ::Val{outer_dims}) where {outer_dims}
     out = similar(a, T, newaxes)
     for j in CartesianIndices(outeraxes)
         I = slice_inds(j, Val(outer_dims), Val(ndims_total))
-        out[I..., :] = a[j]  # trailing ':' is required for zero-dimensional a[j]
+        view(out, I...) .= a[j]
     end
     return out
 end
