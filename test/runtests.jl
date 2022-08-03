@@ -1,6 +1,7 @@
 using SplitApplyCombine
 using Dictionaries
 using StaticArrays
+using StructArrays
 using Test
 
 include("only.jl")
