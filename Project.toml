@@ -15,7 +15,7 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 test = ["Test", "StaticArrays"]
 
 [compat]
-julia = "1"
+julia = "1.10"
 Indexing = "1.1"
 Dictionaries = "0.3, 0.4"
 StaticArrays = "1"

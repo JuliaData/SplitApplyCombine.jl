@@ -7,12 +7,6 @@ import Dictionaries: filterview
 
 import Base: merge, merge!, size, IndexStyle, getindex, parent, axes, iterate
 
-# collections -> scalar
-if VERSION < v"1.4.0-DEV"
-    export only
-    include("only.jl")
-end
-
 # collections -> collections
 export mapmany, mapview, MappedIterator, MappedArray, product, productview, ProductArray, filterview
 
@@ -39,18 +33,5 @@ include("leftgroupjoin.jl")
 include("splitdims.jl")
 include("combinedims.jl")
 include("invert.jl")
-
-# Silly definitions missing from Base
-# (defining them here is piracy)
-# ===================================
-
-if !hasmethod(Base.haskey, (Any, Any))
-    Base.haskey(a, i) = i ∈ keys(a)
-end
-
-if VERSION < v"1.2"
-    keytype(a::AbstractArray) = eltype(keys(a))
-    keytype(a) = Base.keytype(a)
-end
 
 end # module
