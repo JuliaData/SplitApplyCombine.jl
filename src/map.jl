@@ -68,7 +68,7 @@ Base.length(it::MappedIterator) = length(it.parent)
 Base.size(it::MappedIterator) = size(it.parent)
 Base.axes(it::MappedIterator) = axes(it.parent)
 Base.keys(it::MappedIterator) = keys(it.parent)
-@propagate_inbounds Base.getindex(it::MappedIterator, i) = it.parent[i]
+@propagate_inbounds Base.getindex(it::MappedIterator, i) = it.f(it.parent[i])
 
 struct MappedArray{T, N, F, A <: AbstractArray{<:Any, N}} <: AbstractArray{T, N}
 	f::F
