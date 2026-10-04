@@ -34,8 +34,9 @@ group(by::Callable, f::Callable, iter1, iter2, iters...) = group((x -> by(x...))
 """
     group(groups, values)
 
-Return a dictionary of the elements of `values` grouped by the label inidcated by by the
-matching element from `groups`.
+Return a dictionary of the elements of `values` grouped by the label indicated by the
+matching element from `groups`. Preserve every value in input order within each group,
+including repeated values.
 
 # Example
 
@@ -52,8 +53,7 @@ function group(groups, values)
 
     out = Dictionary{I, Vector{T}}()
     @inbounds for (group, value) in zip(groups, values)
-        tmp = get!(() -> T[value], out, group)
-        last(tmp) == value || push!(tmp, value)
+        push!(get!(Vector{T}, out, group), value)
     end
 
     return out

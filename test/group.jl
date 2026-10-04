@@ -7,6 +7,21 @@
     @test group((x,y) -> iseven(x+y), (x,y) -> x, 1:10, [1,3,4,2,5,6,4,2,3,9])::Dictionary == dictionary([true => [1,4,5,6,8,9], false => [2,3,7,10]])
 
     @test group(isnothing, [1, 2, 3, nothing, 4, 5, nothing])::Dictionary == dictionary([false => [1, 2, 3, 4, 5], true => [nothing, nothing]])
+
+    @testset "Iterables preserve every value" begin
+        input = (1, 1, 3, 2, 2)
+        grouped = group(iseven, input)
+        @test grouped[false] == [1, 1, 3]
+        @test grouped[true] == [2, 2]
+        @test group(iseven, (x for x in input))[false] == [1, 1, 3]
+        @test group((:a, :b, :a, :a), (1, 2, 1, 3))[:a] == [1, 1, 3]
+        @test isequal(group((1, 1, 1), (missing, missing, 4))[1], [missing, missing, 4])
+        @test isequal(group(x -> true, (NaN, NaN))[true], [NaN, NaN])
+        @test isequal(group((1, 1), (0.0, -0.0))[1], [0.0, -0.0])
+        @test group((x, y) -> true, +, (1, 1), (2, 2))[true] == [3, 3]
+        @test group(iseven, collect(input))[false] == [1, 1, 3]
+        @test isempty(group((), ()))
+    end
 end
 
 @testset "grouponly" begin
