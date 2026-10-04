@@ -22,6 +22,17 @@ end
 @testset "groupfind" begin
     @test groupfind(identity, 11:20) == Dictionary(11:20, (x->[x]).(1:10))
     @test groupfind(iseven, 11:20) == dictionary([false => [1,3,5,7,9], true => [2,4,6,8,10]])
+
+    @testset "Index sets" begin
+        @test groupfind(Indices([3, 1, 2]))[3] == [3]
+        @test collect(keys(groupfind(Indices([3, 1, 2])))) == [3, 1, 2]
+        @test groupfind(Indices(["a", "b"]))["b"] == ["b"]
+        @test isequal(groupfind(Indices([NaN]))[NaN], [NaN])
+        @test isequal(groupfind(Indices([missing]))[missing], [missing])
+        @test isequal(groupfind(Indices([0.0, -0.0]))[-0.0], [-0.0])
+        @test length(groupfind(Indices([0.0, -0.0]))) == 2
+        @test isempty(groupfind(Indices{Int}()))
+    end
 end
 
 @testset "groupview" begin
