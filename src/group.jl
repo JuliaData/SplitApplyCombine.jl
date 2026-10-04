@@ -308,8 +308,7 @@ function groupfind(inds::AbstractIndices)
 
     out = Dictionary{I, Vector{T}}()
     for i in inds
-        tmp = get!(() -> T[i], out, container[i])
-        last(tmp) == i || push!(tmp, i)
+        set!(out, i, T[i])
     end
     return out
 end
