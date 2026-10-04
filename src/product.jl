@@ -1,24 +1,35 @@
 """
-    product(f, a, b)
+    product(f, a, b, xs...)
 
-Takes the Cartesian outer product of two containers and evaluates `f` on all pairings of
-elements. 
+Take the Cartesian outer product of two or more containers and evaluate `f` on every
+combination of elements. The result's dimensions concatenate the input dimensions.
 
 For example, if `a` and `b` are vectors, this returns a matrix `out` such that
-`out[i,j] = f(a[i], b[j])` for `i in keys(a)` and `j in keys(b)`. See also `productview`.
+`out[i,j] = f(a[i], b[j])` for `i in keys(a)` and `j in keys(b)`.
+See also `productview` for a lazy view of two inputs.
 
 # Example
 
 ```julia
 julia> product(+, [1,2], [1,2,3])
-2×3 Array{Int64,2}:
+2×3 Matrix{Int64}:
  2  3  4
  3  4  5
+
+julia> size(product(+, [1,2], [1,2,3], [10,20]))
+(2, 3, 2)
 ```
 """
 function product(f::Callable, a, b)
 	out = similar(a, promote_op(f, eltype(a), eltype(b)), (axes(a)..., axes(b)...))
 	return product!(f, out, a, b)
+end
+
+function product(f::Callable, a, b, c, xs...)
+	inputs = (a, b, c, xs...)
+	combinations = Iterators.product(inputs...)
+	out = similar(a, promote_op(f, map(eltype, inputs)...), axes(combinations))
+	return copyto!(out, (f(values...) for values in combinations))
 end
 
 @inline function product!(f::Callable, out, a, b)
